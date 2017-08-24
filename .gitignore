@@ -1,0 +1,8 @@
+*.[oa]
+*.vsa
+*.so
+*.ncb
+/Docs
+*.opendb
+*.db
+*.VC.db
