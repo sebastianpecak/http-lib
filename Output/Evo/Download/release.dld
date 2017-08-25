@@ -1,0 +1,4 @@
+-i setdrive.i
+-i ..\Files\Release\Sign\Flash\http.lib.p7s
+-i setdrive.f
+-i ..\Files\Release\http.lib
