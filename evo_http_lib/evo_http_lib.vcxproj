@@ -39,22 +39,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <NMakeBuildCommandLine />
-    <NMakeReBuildCommandLine />
-    <NMakeCleanCommandLine />
+    <NMakeBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=1
+nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeCleanCommandLine>
     <NMakeOutput />
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\Users\specak\Documents\gitlab\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <NMakeBuildCommandLine />
-    <NMakeReBuildCommandLine />
-    <NMakeCleanCommandLine />
+    <NMakeBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=0
+nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeCleanCommandLine>
     <NMakeOutput />
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>C:\Users\specak\Documents\gitlab\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
@@ -65,7 +67,11 @@
     <ClInclude Include="..\Include\HttpLib.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Source\HttpLib.cpp" />
+    <ClCompile Include="..\Source\HttpLib.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Projects\Evo\makefile" />
+    <None Include="..\Projects\httplib.lid" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

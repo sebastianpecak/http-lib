@@ -8,16 +8,16 @@
 // Sets passes pointer to method string name.
 static void _GetHttpMethodString(HttpMethod method, const char** methodText) {
 	switch (method) {
-	case HttpMethod::GET:
+	case GET:
 		*methodText = "GET";
 		break;
-	case HttpMethod::HEAD:
+	case HEAD:
 		*methodText = "HEAD";
 		break;
-	case HttpMethod::POST:
+	case POST:
 		*methodText = "POST";
 		break;
-	case HttpMethod::PUT:
+	case PUT:
 		*methodText = "PUT";
 		break;
 	default:
@@ -29,10 +29,10 @@ static void _GetHttpMethodString(HttpMethod method, const char** methodText) {
 ///////////////////////////////////////////////////////////////////////////////
 static void _GetHttpVersionString(HttpVersion version, const char** versionText) {
 	switch (version) {
-	case HttpVersion::HTTP_10:
+	case HTTP_10:
 		*versionText = "1.0";
 		break;
-	case HttpVersion::HTTP_11:
+	case HTTP_11:
 		*versionText = "1.1";
 		break;
 	default:
@@ -74,7 +74,27 @@ int _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, c
 
 ///////////////////////////////////////////////////////////////////////////////
 int _HttpCompleteRequest(char* request, int requestSize) {
+	// Request length.
+	int length = 0;
 
+	if (request && requestSize > 0) {
+		// Search for \r\n\r\n.
+		if (strstr(request, "\r\n\r\n") == NULL) {
+			// Check if last 2 characters are \r\n. If yes append 1 more pair.
+			length = strlen(request);
+			if (request[length - 2] == '\r' && request[length - 1] == '\n') {
+				// Check if we can append.
+				if (length + 2 <= requestSize)
+					strcpy((request + length), "\r\n");
+				else
+					return -2;
+			}
+		}
+		// Found. Probably header is terminated by 2xCRLF.
+		return 0;
+	}
+	else
+		return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,21 +225,23 @@ int _HttpSend(const char* request, const HttpContext* httpContext) {
 
 ///////////////////////////////////////////////////////////////////////////////
 int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpContext) {
-
+	return 0;
 }
 
+/*
 int main() {
-	char httpRequest[1024];
+	char httpRequest[128];
 	HttpInitRequest(HttpMethod::POST, "/lisener3des.php", HttpVersion::HTTP_11, httpRequest, sizeof(httpRequest));
 	HttpSetProperty("Host", "195.78.239.101", httpRequest, sizeof(httpRequest));
-	HttpSetProperty("Content-Type", "data/binary", httpRequest, sizeof(httpRequest));
+	HttpSetProperty("Content-Length", "0", httpRequest, sizeof(httpRequest));
 	// Open connection.
-	HttpContext context;
+	HttpContext context = { 0 };
 	context.Timeout = 3000;
 	HttpConnect("195.78.239.101", 2080, 0, &context);
 	HttpSend(httpRequest, &context);
 	// Cleanup buffer.
-	memset(httpRequest, 0, sizeof(httpRequest));
-	HttpRecv(httpRequest, sizeof(httpRequest), &context);
+	//memset(httpRequest, 0, sizeof(httpRequest));
+	//HttpRecv(httpRequest, sizeof(httpRequest), &context);
 	HttpDisconnect(&context);
 }
+*/

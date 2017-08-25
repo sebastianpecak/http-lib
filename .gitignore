@@ -6,3 +6,7 @@
 *.opendb
 *.db
 *.VC.db
+*.map
+*.axf
+*.err
+*.p7s
