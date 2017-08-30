@@ -430,16 +430,13 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 		// zbierajmy nag³ówek !!! (powinniœmy zacz¹æ od rozmiaru minimalnego np 100b
 		// i przerwaæ jeœli za du¿o powtórzeñ
 		result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, header_buffer, HTTP_MIN_HEADER, &rc_size, httpCtx->Timeout);
-		//CsRecv(handle, header_buffer, HTTP_MIN_HEADER, timeout, block);
 
-		// warto poprawiæ na i+= rc_size...
 		i += rc_size;
 
 		if (rc_size <= 0)
 			return rc_size;
 
 		while (((header_size = _ReadHttpHeader(httpCtx, header_buffer, HTTP_MAX_HEADER)) == 0) && (i < HTTP_MAX_HEADER)) {
-			//rc_size = CsRecv(handle, header_buffer + i, 1, timeout, block);
 			result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, header_buffer + i, 1, &rc_size, httpCtx->Timeout);
 			if (rc_size <= 0)
 				return rc_size;
@@ -464,7 +461,6 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 
 			// Jesteœmy w trakcie chunk'a i w nim jest wystarczaj¹co du¿o danych.
 			if (httpCtx->chunk_size >= bufferSize - rc_total_size) {
-				//if ((rc_size = CsRecv(handle, buffer + rc_total_size, size - rc_total_size, timeout, block)) <= 0)
 				result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer + rc_total_size, bufferSize - rc_total_size, &rc_size, httpCtx->Timeout);
 				if (rc_size <= 0)
 					break;
@@ -477,7 +473,6 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 			// Jesteœmy na etapie chunka'a ale jest w nim ma³o danych.
 			else if (httpCtx->chunk_size > 0) {
 				result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer + rc_total_size, httpCtx->chunk_size, &rc_size, httpCtx->Timeout);
-				//if ((rc_size = CsRecv(handle, buffer + rc_total_size, handle->chunk_size, timeout, block)) <= 0)
 				if (rc_size <= 0)
 					break;
 				httpCtx->chunk_size -= rc_size;
@@ -489,10 +484,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 				if (_ReadNextChunkSize(httpCtx, (unsigned char*)buffer, bufferSize - rc_total_size, (int*)&chunk_len) <= 0)
 					break;
 				if (httpCtx->chunk_size == 0) {
-					//httpCtx->ending_chunk = 1;
-					httpCtx->Flags |= HTTP_CHUNKED;
-					// read trash from vsocket
-					//CsRecv(handle, trash_buffer, 2, timeout, block);
+					httpCtx->Flags |= HTTP_ENDING_CHUNK;
+					// Read trash from vsocket.
 					VCS_RecieveRawData(httpCtx->VCSSessionHandle, trash_buffer, sizeof(trash_buffer), &rc_size, httpCtx->Timeout);
 				}
 			}
@@ -503,7 +496,6 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 	}
 	// Poczatek transmisji z nag³ówkiem ale bez chunków.
 	else {
-		//if ((rc_size = CsRecv(handle, buffer, size, timeout, block)) >= 0)
 		VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, &rc_size, httpCtx->Timeout);
 		if (rc_size > 0)
 			httpCtx->rc_parser += rc_size;
