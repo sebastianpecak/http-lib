@@ -307,9 +307,11 @@ static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 		_HttpGetProperty("Transfer-Encoding", textBuffer, sizeof(textBuffer), buffer);
 		// If we have chunked transfer.
 		if (strstr(textBuffer, "chunked") != NULL)
-			httpCtx->chunked = 1;
+			//httpCtx->chunked = 1;
+			httpCtx->Flags |= HTTP_CHUNKED;
 		else {
-			httpCtx->chunked = 0;
+			//httpCtx->chunked = 0;
+			httpCtx->Flags &= ~HTTP_CHUNKED;
 			// Ok nie ma chunka wiêc usuñmy.
 			header_size += 2;
 		}
@@ -447,7 +449,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 	// Zero rc.
 	rc_size = 0;
 
-	if (httpCtx->chunked == 1) {
+	//if (httpCtx->chunked == 1) {
+	if (httpCtx->Flags & HTTP_CHUNKED) {
 		// Jeœli dzielone - na pocz¹tku zawsze bêdzie chunk.
 		while (rc_total_size < bufferSize) {
 
@@ -486,7 +489,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 				if (_ReadNextChunkSize(httpCtx, (unsigned char*)buffer, bufferSize - rc_total_size, (int*)&chunk_len) <= 0)
 					break;
 				if (httpCtx->chunk_size == 0) {
-					httpCtx->ending_chunk = 1;
+					//httpCtx->ending_chunk = 1;
+					httpCtx->Flags |= HTTP_CHUNKED;
 					// read trash from vsocket
 					//CsRecv(handle, trash_buffer, 2, timeout, block);
 					VCS_RecieveRawData(httpCtx->VCSSessionHandle, trash_buffer, sizeof(trash_buffer), &rc_size, httpCtx->Timeout);

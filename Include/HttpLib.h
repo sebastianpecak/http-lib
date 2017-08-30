@@ -7,6 +7,9 @@
 #define HTTP_MAX_CHUNK_LEN	8
 #define PARSER_TMP_BUFFER	32
 #define HTTP_MAX_CHUNK_SIZE	4096
+// Http flags values.
+#define HTTP_CHUNKED		(1)
+#define HTTP_ENDING_CHUNK	(1 << 1)
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,8 +51,10 @@ extern "C" {
 		unsigned char index;				/**< indek w tablicy po³azeñ ComService */
 		unsigned short chunk_size; 			/**< rozmiar bie¿¹cego chunka (post-parser)*/
 		unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
-		unsigned int ending_chunk : 1;				/**< czy to czhunk koñcz¹cy chunk (post-parser)*/
-		unsigned int chunked : 1;					/**< czy po³¹czenie chunkowane (post-parser)*/
+		// Http context flags.
+		unsigned char Flags;
+		//unsigned int ending_chunk : 1;				/**< czy to czhunk koñcz¹cy chunk (post-parser)*/
+		//unsigned int chunked : 1;					/**< czy po³¹czenie chunkowane (post-parser)*/
 		// Response body length.
 		unsigned long ContentLength;
 		long rc_size;						/**< iloœc danych odebranych */
