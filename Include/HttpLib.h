@@ -1,6 +1,13 @@
 #ifndef HTTPLIB_H
 #define HTTPLIB_H
 
+// Comstants copied from old HTTP library.
+#define HTTP_MAX_HEADER		300
+#define HTTP_MIN_HEADER		140
+#define HTTP_MAX_CHUNK_LEN	8
+#define PARSER_TMP_BUFFER	32
+#define HTTP_MAX_CHUNK_SIZE	4096
+
 #ifdef __cplusplus
 extern "C" {
 #endif	// __cplusplus
@@ -33,6 +40,24 @@ extern "C" {
 		unsigned short VCSSessionHandle;
 		// Global timeout setting.
 		long Timeout;
+
+		// This part is copied from old _csh struct.
+		// Corrected int fileds to unsigned int not to get -1 value on output.
+		unsigned short rc_data;				/**< przechowuje iloœæ danych w buforze roboczym */
+		unsigned short rc_pos;				/**< przechowuje pozycje w buforze roboczym */
+		unsigned char index;				/**< indek w tablicy po³azeñ ComService */
+		unsigned short chunk_size; 			/**< rozmiar bie¿¹cego chunka (post-parser)*/
+		unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
+		unsigned int ending_chunk : 1;				/**< czy to czhunk koñcz¹cy chunk (post-parser)*/
+		unsigned int chunked : 1;					/**< czy po³¹czenie chunkowane (post-parser)*/
+		long length;						/**< d³ugoœæ nag³ówka (post-parser)*/
+		long rc_size;						/**< iloœc danych odebranych */
+		long tr_size;						/**< iloœæ danych wys³anych */
+		long rc_parser;						/**< rozmiar danych odebranych i przetworzonych przez zewnêtrzny parser protoko³u warstwy aplikacji np http (post-parser)*/
+		unsigned char * parser_buffer; 		/**< wskaŸnik na bufor dodatkowy roboczy (post-parser)*/
+		unsigned short parser_buffer_size; 	/**<  bierz¹cy rozmiar danych w dodatkowym buforze roboczym (post-parser)*/
+		unsigned char chunk_tmp_buffer[PARSER_TMP_BUFFER];		/**< tymczasowy bufor roboczy (post-parser)*/
+		unsigned short chunk_tmp_size;		/** rozmiar bie¿¹cego chunka (post-parser)*/
 	} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -66,6 +91,8 @@ extern "C" {
 	// 4) Request buffer size.
 	// Returns: Non-zero value on error.
 	extern int _HttpSetProperty(const char*, const char*, char*, int);
+	// This function gets property value from request/response.
+	extern int _HttpGetProperty(const char*, char*, int, const char*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function completes request header and sets its body.
@@ -75,6 +102,9 @@ extern "C" {
 	// 3) Request buffer size.
 	// Returns: Non-zero value on error.
 	extern int _HttpSetRequestBody(const char*, char*, int);
+	// This function sets body to raw data (can cantain zeroes).
+	// Returns request size (in bytes). Important when sending binary data.
+	extern int _HttpSetRequestBodyRaw(const unsigned char*, int, char*, int);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function establishes connection with remote host, using given: url, port and SSL setting.
@@ -102,7 +132,7 @@ extern "C" {
 	// 1) Request (null-terminated string).
 	// 2) Valid HttpContext pointer.
 	// Returns: Non-zero value on error.
-	extern int _HttpSend(const char*, const HttpContext*);
+	extern int _HttpSend(const unsigned char*, int, const HttpContext*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	extern int _HttpRecv(char*, int, HttpContext*);
@@ -123,6 +153,12 @@ extern "C" {
 #undef HttpSetProperty
 #endif
 #define HttpSetProperty _HttpSetProperty
+
+///////////////////////////////////////////////////////////////////////////////
+#ifdef HttpGetProperty
+#undef HttpGetProperty
+#endif
+#define HttpGetProperty _HttpGetProperty
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef HttpSetRequestBody
@@ -157,5 +193,17 @@ extern "C" {
 #undef HttpDisconnect
 #endif
 #define HttpDisconnect _HttpDisconnect
+
+///////////////////////////////////////////////////////////////////////////////
+#ifdef HttpSetRequestBodyRaw
+#undef HttpSetRequestBodyRaw
+#endif
+#define HttpSetRequestBodyRaw _HttpSetRequestBodyRaw
+
+///////////////////////////////////////////////////////////////////////////////
+#ifdef HttpCompleteRequest
+#undef HttpCompleteRequest
+#endif
+#define HttpCompleteRequest _HttpCompleteRequest
 
 #endif	// HTTPLIB_H

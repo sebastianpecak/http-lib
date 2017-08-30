@@ -2,21 +2,8 @@
   Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.a /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.o /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.lib /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.axf /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.map /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.err /Q
-  
-  Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
-  Copyright (C) Microsoft Corporation.  All rights reserved.
-  
-  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -g -shlpic -c -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o
-  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -g -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o -D_SHARED_LIB --apcs=/fpic/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
-  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic -g C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Debug\vcslib.a C:\eVoAps\VMAC\2.7.0\\Output\RV\Lib\Files\Debug\vmac.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.a
-  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Debug\vcslib.a C:\eVoAps\VMAC\2.7.0\\Output\RV\Lib\Files\Debug\vmac.o 
-  Creating archive 'C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.a'
+  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic -g C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Debug\vcslib.a C:\eVoAps\ACT2000\1.14.0\\OutPut\RV\Files\Shlib1\Release\act.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.a
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Debug\vcslib.a C:\eVoAps\ACT2000\1.14.0\\OutPut\RV\Files\Shlib1\Release\act.o 
   	copy C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Projects\httplib.lid C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.lid
           1 file(s) copied.
   	cd C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug
@@ -28,9 +15,9 @@
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_pic --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   Code Address 00000040
-  Code Size    8936
-  Data Address 00003000
-  Data Size    16 (16+0)
+  Code Size    388
+  Data Address 00001000
+  Data Size    4 (4+0)
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_pic --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_pic --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\fromelf" --bin HTTPLIB.axf -o HTTPLIB.LIB

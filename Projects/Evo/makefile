@@ -50,9 +50,9 @@ LibNameOut = http
 ## Compiler options.
 ##----------------------------------------------------------------
 !if $(DEBUG) == 0
-COptions = -p -v -shlpic -c
+COptions = -p -v -shlabs -c
 !else
-COptions = -p -v -g -shlpic -c
+COptions = -p -v -g -shlabs -c
 !endif
 
 ##----------------------------------------------------------------
@@ -69,11 +69,10 @@ LOptions = -p -v -shlpic -g
 ##----------------------------------------------------------------
 !if $(DEBUG) == 0
 VCSLib = $(VCSLibDir)\Output\Evo\Files\Release\vcslib.a
-VMACLib = $(EVOVMAC)\Output\RV\Lib\Files\Release\vmac.o
 !else
 VCSLib = $(VCSLibDir)\Output\Evo\Files\Debug\vcslib.a
-VMACLib = $(EVOVMAC)\Output\RV\Lib\Files\Debug\vmac.o
 !endif
+ACTLib = $(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o
 
 ##----------------------------------------------------------------
 ## Build configuration.
@@ -113,7 +112,7 @@ $(OutDir)\$(LibNameOut).lib : $(OutDir)\$(LibNameWork).a $(ProjDir)\Projects\$(L
 ##----------------------------------------------------------------
 ## Link.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(VCSLib) $(VMACLib)
+$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(VCSLib) $(ACTLib)
 	$(EVOSDK)\bin\vrxcc $(LOptions) $** -o $@
 
 ##----------------------------------------------------------------

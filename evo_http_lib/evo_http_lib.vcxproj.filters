@@ -29,11 +29,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Projects\Evo\makefile">
-      <Filter>Projects\Evo</Filter>
-    </None>
     <None Include="..\Projects\httplib.lid">
       <Filter>Projects</Filter>
+    </None>
+    <None Include="..\Projects\Evo\makefile">
+      <Filter>Projects\Evo</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

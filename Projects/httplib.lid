@@ -1,9 +1,11 @@
-HTTPLIB id=28 addr=0x0 ver=1.0 thumb
+HTTPLIB id=27 addr=70a80000 ver=1.0 thumb
 1 _HttpInitRequest
-2 _HttpCompleteRequest
-3 _HttpSetProperty
-4 _HttpSetRequestBody
-5 _HttpConnect
-6 _HttpDisconnect
-7 _HttpSend
-8 _HttpRecv
+2 _HttpSetProperty
+3 _HttpSetRequestBody
+4 _HttpConnect
+5 _HttpDisconnect
+6 _HttpSend
+7 _HttpRecv
+8 _HttpSetRequestBodyRaw
+9 _HttpCompleteRequest
+10 _HttpGetProperty
