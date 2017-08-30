@@ -50,7 +50,8 @@ extern "C" {
 		unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
 		unsigned int ending_chunk : 1;				/**< czy to czhunk koñcz¹cy chunk (post-parser)*/
 		unsigned int chunked : 1;					/**< czy po³¹czenie chunkowane (post-parser)*/
-		long length;						/**< d³ugoœæ nag³ówka (post-parser)*/
+		// Response body length.
+		unsigned long ContentLength;
 		long rc_size;						/**< iloœc danych odebranych */
 		long tr_size;						/**< iloœæ danych wys³anych */
 		long rc_parser;						/**< rozmiar danych odebranych i przetworzonych przez zewnêtrzny parser protoko³u warstwy aplikacji np http (post-parser)*/
@@ -104,7 +105,7 @@ extern "C" {
 	extern int _HttpSetRequestBody(const char*, char*, int);
 	// This function sets body to raw data (can cantain zeroes).
 	// Returns request size (in bytes). Important when sending binary data.
-	extern int _HttpSetRequestBodyRaw(const unsigned char*, int, char*, int);
+	extern int _HttpSetRequestBodyRaw(const void*, int, char*, int);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function establishes connection with remote host, using given: url, port and SSL setting.
