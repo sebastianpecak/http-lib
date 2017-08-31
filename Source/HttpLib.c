@@ -240,24 +240,24 @@ int _HttpConnect(const char* url, unsigned short port, unsigned char ssl, HttpCo
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpDisconnect(HttpContext* httpContext) {
+int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 	// Result buffer.
 	int result = 0;
 
 	// Disconnect from remote host.
 	result = VCS_Disconnect(httpContext->VCSSessionHandle, httpContext->Timeout);
-	if (result != 0)
+	if (!force && result != 0)
 		return result;
 	// End session with VCS.
 	result = VCS_DropSession(&httpContext->VCSSessionHandle, httpContext->Timeout);
-	if (result != 0)
+	if (!force && result != 0)
 		return result;
 	// Return success.
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpSend(const unsigned char* request, int requestSize, const HttpContext* httpContext) {
+int _HttpSend(const void* request, int requestSize, const HttpContext* httpContext) {
 	return VCS_TransmitRawData(httpContext->VCSSessionHandle, request, requestSize, httpContext->Timeout);
 }
 

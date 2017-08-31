@@ -128,8 +128,9 @@ extern "C" {
 	// Requires valid HttpContext pointer.
 	// Arguments:
 	// Valid pointer to HttpContext object.
+	// Force disconnect flag.
 	// Returns: Non-zero value on error.
-	extern int _HttpDisconnect(HttpContext*);
+	extern int _HttpDisconnect(HttpContext*, unsigned char);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function sends HTTP request over established connection.
@@ -138,7 +139,7 @@ extern "C" {
 	// 1) Request (null-terminated string).
 	// 2) Valid HttpContext pointer.
 	// Returns: Non-zero value on error.
-	extern int _HttpSend(const unsigned char*, int, const HttpContext*);
+	extern int _HttpSend(const void*, int, const HttpContext*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	extern int _HttpRecv(char*, int, HttpContext*);
@@ -198,7 +199,13 @@ extern "C" {
 #ifdef HttpDisconnect
 #undef HttpDisconnect
 #endif
-#define HttpDisconnect _HttpDisconnect
+#define HttpDisconnect(httpCtx) _HttpDisconnect(httpCtx, 0)
+
+///////////////////////////////////////////////////////////////////////////////
+#ifdef HttpDisconnectForce
+#undef HttpDisconnectForce
+#endif
+#define HttpDisconnectForce(httpCtx) _HttpDisconnect(httpCtx, 1)
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef HttpSetRequestBodyRaw

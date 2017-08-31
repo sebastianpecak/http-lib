@@ -2,8 +2,43 @@
   Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.a /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.o /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.lib /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.axf /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.map /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.err /Q
+  
+  Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlabs -c -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o -D_SHARED_LIB --apcs=/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 279: Warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "unsigned char *"
+    	data_start = strstr(buffer, "\r\n\r\n");
+    	           ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 286: Warning:  #42-D: operand types are incompatible ("unsigned char *" and "char *")
+    		header_size = (int)(data_start - buffer);
+    		                               ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 286: Warning:  #993-D: subtraction of pointer types "unsigned char *" and "char *" is nonstandard
+    		header_size = (int)(data_start - buffer);
+    		                               ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 370: Warning:  #177-D: variable "size_orig" was declared but never referenced
+    	unsigned short size_orig = size;
+    	               ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 439: Warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *"
+    		while (((header_size = _ReadHttpHeader(httpCtx, header_buffer, HTTP_MAX_HEADER)) == 0) && (i < HTTP_MAX_HEADER)) {
+    		                                                ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 421: Warning:  #550-D: variable "header_size" was set but never used
+    	int header_size = 0;
+    	    ^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 426: Warning:  #550-D: variable "result" was set but never used
+    	int result = 0;
+    	    ^
+  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 7 warnings, 0 errors
   	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Release\vcslib.a C:\eVoAps\ACT2000\1.14.0\\OutPut\RV\Files\Shlib1\Release\act.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Release\vcslib.a C:\eVoAps\ACT2000\1.14.0\\OutPut\RV\Files\Shlib1\Release\act.o 
+  Creating archive 'C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a'
   	copy C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Projects\httplib.lid C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lid
           1 file(s) copied.
   	cd C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release
@@ -15,9 +50,9 @@
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   Code Address 70A80040
-  Code Size    408
-  Data Address 70A81000
-  Data Size    4 (4+0)
+  Code Size    16376
+  Data Address 70A85000
+  Data Size    16 (16+0)
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\fromelf" --bin HTTPLIB.axf -o HTTPLIB.LIB
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lid /Q
