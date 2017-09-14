@@ -3,11 +3,14 @@
 #include <stdio.h>
 #include <VCSLib.h>
 #include <stdlib.h>
+#include <logsys.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function for internal usage.
 // Sets passes pointer to method string name.
 static void _GetHttpMethodString(HttpMethod method, const char** methodText) {
+	LOG_PRINTF(("_GetHttpMethodString() -> Start."));
+
 	switch (method) {
 	case GET:
 		*methodText = "GET";
@@ -25,10 +28,14 @@ static void _GetHttpMethodString(HttpMethod method, const char** methodText) {
 		*methodText = "";
 		break;
 	}
+
+	LOG_PRINTF(("_GetHttpMethodString() -> End."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 static void _GetHttpVersionString(HttpVersion version, const char** versionText) {
+	LOG_PRINTF(("_GetHttpVersionString() -> Start."));
+
 	switch (version) {
 	case HTTP_10:
 		*versionText = "1.0";
@@ -40,6 +47,8 @@ static void _GetHttpVersionString(HttpVersion version, const char** versionText)
 		*versionText = "";
 		break;
 	}
+
+	LOG_PRINTF(("_GetHttpVersionString() -> End."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,6 +57,8 @@ int _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, c
 	const char* methodString = NULL;
 	// Selected version.
 	const char* versionString = NULL;
+
+	LOG_PRINTF(("_HttpInitRequest() -> Start."));
 
 	// Check request buffer validity.
 	if (request && requestSize > 0) {
@@ -77,6 +88,8 @@ int _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, c
 int _HttpCompleteRequest(char* request, int requestSize) {
 	// Request ContentLength.
 	int length = 0;
+
+	LOG_PRINTF(("_HttpCompleteRequest() -> Start."));
 
 	if (request && requestSize > 0) {
 		// Search for \r\n\r\n.
@@ -108,6 +121,8 @@ int _HttpSetProperty(const char* key, const char* value, char* request, int requ
 	char* oldProperty = NULL;
 	// Pointer to substring tail (part that comes after old property).
 	char* propertyTail = NULL;
+
+	LOG_PRINTF(("_HttpSetProperty() -> Start."));
 
 	if (request && requestSize > 0) {
 		// Check if in request there is no such as property already set.
@@ -150,6 +165,8 @@ int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* 
 	const char* propertyTerm = NULL;
 	int valueSize = 0;
 
+	LOG_PRINTF(("_HttpGetProperty() -> Start."));
+
 	// Seek for key.
 	propertyFound = strstr(http, key);
 	if (propertyFound != NULL) {
@@ -173,6 +190,8 @@ int _HttpSetRequestBody(const char* body, char* request, int requestSize) {
 	int result = 0;
 	// Text buffer.
 	char textBuffer[16] = { 0 };
+
+	LOG_PRINTF(("_HttpSetRequestBody() -> Start."));
 
 	// Check parameter validity.
 	if (request && requestSize > 0) {
@@ -211,6 +230,8 @@ int _HttpSetRequestBodyRaw(const void* bodyRaw, int bodySize, char* request, int
 	// Request header length.
 	int headerLength = 0;
 
+	LOG_PRINTF(("_HttpSetRequestBodyRaw() -> Start."));
+
 	sprintf(buffer, "%d", bodySize);
 	_HttpSetProperty("Content-Length", buffer, request, requestSize);
 	_HttpCompleteRequest(request, requestSize);
@@ -224,6 +245,8 @@ int _HttpSetRequestBodyRaw(const void* bodyRaw, int bodySize, char* request, int
 int _HttpConnect(const char* url, unsigned short port, unsigned char ssl, HttpContext* httpContext) {
 	// Result buffer.
 	int result = 0;
+
+	LOG_PRINTF(("_HttpConnect() -> Start."));
 
 	// Intialize session with VCS.
 	result = VCS_InitializeSession(&httpContext->VCSSessionHandle, httpContext->Timeout);
@@ -244,6 +267,8 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 	// Result buffer.
 	int result = 0;
 
+	LOG_PRINTF(("_HttpDisconnect() -> Start."));
+
 	// Disconnect from remote host.
 	result = VCS_Disconnect(httpContext->VCSSessionHandle, httpContext->Timeout);
 	if (!force && result != 0)
@@ -258,6 +283,8 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 
 ///////////////////////////////////////////////////////////////////////////////
 int _HttpSend(const void* request, int requestSize, const HttpContext* httpContext) {
+	LOG_PRINTF(("_HttpSend() -> Start."));
+
 	return VCS_TransmitRawData(httpContext->VCSSessionHandle, request, requestSize, httpContext->Timeout);
 }
 
@@ -274,6 +301,8 @@ static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 	//unsigned char * tmp1_p = NULL;
 	int header_size = 0;
 	char textBuffer[32] = { 0 };
+
+	LOG_PRINTF(("_ReadHttpHeader() -> Start."));
 
 	// Check if we deal with complete header.
 	data_start = strstr(buffer, "\r\n\r\n");
@@ -335,6 +364,8 @@ static int _HexToInt(HttpContext* handle, int* chunk_len) {
 	unsigned char * possition_m = NULL;
 	int i = 0;
 
+	LOG_PRINTF(("_HexToInt() -> Start."));
+
 	chunk_val = (unsigned short)strtol((const char *)handle->chunk_tmp_buffer, (char**)&p, 16);
 
 	if (chunk_val <= 0)
@@ -372,6 +403,8 @@ static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int si
 	int init_offset = 0;
 	char pattern[] = "\r\n";
 	handle->parser_buffer_size = 0L;
+
+	LOG_PRINTF(("_ReadNextChunkSize() -> Start."));
 
 	// Buffer for text hex value.
 	memset(handle->chunk_tmp_buffer, 0, HTTP_MAX_CHUNK_LEN);
@@ -424,6 +457,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 	unsigned short i = 0;
 	unsigned char header_buffer[HTTP_MAX_HEADER] = { 0 };
 	int result = 0;
+
+	LOG_PRINTF(("_HttpRecv() -> Start."));
 
 	// pocz¹tek !!! nie mamy jeszcze nic wiêc  najpierw nag³ówek
 	if (httpCtx->rc_parser == 0) {

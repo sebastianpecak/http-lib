@@ -34,11 +34,12 @@ SDKIncludes = $(EVOSDK)\Include
 #VMACIncludes = $(EVOVMAC)\Include
 SelfIncludes = $(ProjDir)\Include
 VCSLibIncludes = $(VCSLibDir)\Include
+ACTIncludes = $(EVOACT)\Include
 
 ##----------------------------------------------------------------
 ## All includes packed as compiler parameters.
 ##----------------------------------------------------------------
-Includes = -I$(SDKIncludes) -I$(SelfIncludes) -I$(VCSLibIncludes)
+Includes = -I$(SDKIncludes) -I$(SelfIncludes) -I$(VCSLibIncludes) -I$(ACTIncludes)
 
 ##----------------------------------------------------------------
 ## Output name.
@@ -52,7 +53,7 @@ LibNameOut = http
 !if $(DEBUG) == 0
 COptions = -p -v -shlabs -c
 !else
-COptions = -p -v -g -shlabs -c
+COptions = -p -v -g -shlabs -c -DLOGSYS_FLAG
 !endif
 
 ##----------------------------------------------------------------
@@ -61,7 +62,7 @@ COptions = -p -v -g -shlabs -c
 !if $(DEBUG) == 0
 LOptions = -p -v -shlpic
 !else
-LOptions = -p -v -shlpic -g
+LOptions = -p -v -shlpic -g -map
 !endif
 
 ##----------------------------------------------------------------
