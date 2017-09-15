@@ -69,9 +69,9 @@ LOptions = -p -v -shlpic -g -map
 ## Linkable objects.
 ##----------------------------------------------------------------
 !if $(DEBUG) == 0
-VCSLib = $(VCSLibDir)\Output\Evo\Files\Release\vcslib.a
+VCSLib = $(VCSLibDir)\Output\Evo\Files\Release\vcslib.o
 !else
-VCSLib = $(VCSLibDir)\Output\Evo\Files\Debug\vcslib.a
+VCSLib = $(VCSLibDir)\Output\Evo\Files\Debug\vcslib.o
 !endif
 ACTLib = $(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o
 
@@ -113,7 +113,7 @@ $(OutDir)\$(LibNameOut).lib : $(OutDir)\$(LibNameWork).a $(ProjDir)\Projects\$(L
 ##----------------------------------------------------------------
 ## Link.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(VCSLib) $(ACTLib)
+$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(ACTLib) $(VCSLib)
 	$(EVOSDK)\bin\vrxcc $(LOptions) $** -o $@
 
 ##----------------------------------------------------------------
