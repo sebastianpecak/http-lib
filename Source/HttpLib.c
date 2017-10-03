@@ -6,49 +6,33 @@
 #include <logsys.h>
 
 ///////////////////////////////////////////////////////////////////////////////
+static const char* MethodsText[] = {
+	"GET",
+	"HEAD",
+	"POST",
+	"PUT"
+};
+
+///////////////////////////////////////////////////////////////////////////////
+static const char* VersionsText[] = {
+	"1.0",
+	"1.1"
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // Function for internal usage.
 // Sets passes pointer to method string name.
 static void _GetHttpMethodString(HttpMethod method, const char** methodText) {
 	LOG_PRINTF(("_GetHttpMethodString() -> Start."));
 
-	switch (method) {
-	case GET:
-		*methodText = "GET";
-		break;
-	case HEAD:
-		*methodText = "HEAD";
-		break;
-	case POST:
-		*methodText = "POST";
-		break;
-	case PUT:
-		*methodText = "PUT";
-		break;
-	default:
-		*methodText = "";
-		break;
-	}
-
-	LOG_PRINTF(("_GetHttpMethodString() -> End."));
+	*methodText = MethodsText[method];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 static void _GetHttpVersionString(HttpVersion version, const char** versionText) {
 	LOG_PRINTF(("_GetHttpVersionString() -> Start."));
-
-	switch (version) {
-	case HTTP_10:
-		*versionText = "1.0";
-		break;
-	case HTTP_11:
-		*versionText = "1.1";
-		break;
-	default:
-		*versionText = "";
-		break;
-	}
-
-	LOG_PRINTF(("_GetHttpVersionString() -> End."));
+	
+	*versionText = VersionsText[version];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -297,8 +281,6 @@ int _HttpSend(const void* request, int requestSize, const HttpContext* httpConte
 static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 	// Pointers used for data extraction.
 	unsigned char * data_start = NULL;
-	//unsigned char * tmp0_p = NULL;
-	//unsigned char * tmp1_p = NULL;
 	int header_size = 0;
 	char textBuffer[32] = { 0 };
 
@@ -306,40 +288,19 @@ static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 
 	// Check if we deal with complete header.
 	data_start = strstr(buffer, "\r\n\r\n");
-	//if ((data_start = (unsigned char *)strstr((const char *)buffer, "\r\n\r\n")) != NULL)
-	//{
 	if (data_start != NULL) {
 		// Konieczne zostawienie 2 aby odnaleŸæ chunk.
 		data_start += 2;
 		// Calculate header size.
 		header_size = (int)(data_start - buffer);
 		// Wype³nijmy strukture.
-		//tmp0_p = strstr(buffer, "Content-Length: ");
-		//if ((tmp0_p = (unsigned char *)strstr((const char *)buffer, "Content-Length: ")) != NULL)
-		//{
-		//if (tmp0_p != NULL) {
-			// Wyci¹gamy content-length.
-			//tmp1_p = (unsigned char *)strstr((const char *)tmp0_p, " ");
-			//handle->ContentLength = atoi((const char *)tmp1_p);
-		//}
 		_HttpGetProperty("Content-Length", textBuffer, sizeof(textBuffer), buffer);
 		httpCtx->ContentLength = atoi(textBuffer);
-		//if ((tmp0_p = (unsigned char *)strstr((const char *)buffer, "Transfer-Encoding: chunked")) != NULL)
-		//{
-			//handle->chunked = 1;
-		//}
-		//else
-		//{
-			//handle->chunked = 0;
-			//header_size += 2; // ok nie ma chunka wiêc usuñmy
-		//}
 		_HttpGetProperty("Transfer-Encoding", textBuffer, sizeof(textBuffer), buffer);
 		// If we have chunked transfer.
 		if (strstr(textBuffer, "chunked") != NULL)
-			//httpCtx->chunked = 1;
 			httpCtx->Flags |= HTTP_CHUNKED;
 		else {
-			//httpCtx->chunked = 0;
 			httpCtx->Flags &= ~HTTP_CHUNKED;
 			// Ok nie ma chunka wiêc usuñmy.
 			header_size += 2;
@@ -527,6 +488,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 			rc_size = 0;
 		}
 
+		LOG_PRINTF((buffer));
+
 		return rc_total_size;
 	}
 	// Poczatek transmisji z nag³ówkiem ale bez chunków.
@@ -534,6 +497,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 		VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, &rc_size, httpCtx->Timeout);
 		if (rc_size > 0)
 			httpCtx->rc_parser += rc_size;
+
+		LOG_PRINTF((buffer));
 		return rc_size;
 	}
 }
