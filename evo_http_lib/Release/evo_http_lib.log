@@ -2,43 +2,32 @@
   Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.a /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.o /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.lib /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.axf /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.map /Q
-  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.err /Q
-  
-  Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
-  Copyright (C) Microsoft Corporation.  All rights reserved.
-  
-  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlabs -c -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o
-  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o -D_SHARED_LIB --apcs=/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -IC:\Users\specak\Documents\gitlab\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 320: Warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "unsigned char *"
+  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlabs -c -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o -D_SHARED_LIB --apcs=/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 290: Warning:  #513-D: a value of type "char *" cannot be assigned to an entity of type "unsigned char *"
     	data_start = strstr(buffer, "\r\n\r\n");
     	           ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 325: Warning:  #42-D: operand types are incompatible ("unsigned char *" and "char *")
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 295: Warning:  #42-D: operand types are incompatible ("unsigned char *" and "char *")
     		header_size = (int)(data_start - buffer);
     		                               ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 325: Warning:  #993-D: subtraction of pointer types "unsigned char *" and "char *" is nonstandard
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 295: Warning:  #993-D: subtraction of pointer types "unsigned char *" and "char *" is nonstandard
     		header_size = (int)(data_start - buffer);
     		                               ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 392: Warning:  #177-D: variable "size_orig" was declared but never referenced
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 362: Warning:  #177-D: variable "size_orig" was declared but never referenced
     	unsigned short size_orig = size;
     	               ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 465: Warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *"
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 435: Warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *"
     		while (((header_size = _ReadHttpHeader(httpCtx, header_buffer, HTTP_MAX_HEADER)) == 0) && (i < HTTP_MAX_HEADER)) {
     		                                                ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 445: Warning:  #550-D: variable "header_size" was set but never used
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 415: Warning:  #550-D: variable "header_size" was set but never used
     	int header_size = 0;
     	    ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 450: Warning:  #550-D: variable "result" was set but never used
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 420: Warning:  #550-D: variable "result" was set but never used
     	int result = 0;
     	    ^
   C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 7 warnings, 0 errors
-  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a
-  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o C:\Users\specak\Documents\gitlab\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o 
-  Creating archive 'C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a'
+  	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o ..\..\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o ..\..\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o 
   	copy C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Projects\httplib.lid C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lid
           1 file(s) copied.
   	cd C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release

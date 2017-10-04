@@ -45,7 +45,7 @@ nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=1
     <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeCleanCommandLine>
     <NMakeOutput />
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\Users\specak\Documents\gitlab\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;C:\eVoAps\ACT2000\1.14.0\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>..\..\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;..\..\evo_http_lib\Include;C:\eVoAps\ACT2000\1.14.0\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
@@ -56,7 +56,7 @@ nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0
     <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeCleanCommandLine>
     <NMakeOutput />
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>C:\Users\specak\Documents\gitlab\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;C:\Users\specak\Documents\gitlab\evo_http_lib\Include;C:\eVoAps\ACT2000\1.14.0\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>..\..\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;..\..\evo_http_lib\Include;C:\eVoAps\ACT2000\1.14.0\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

@@ -15,7 +15,7 @@ OutDir = $(ProjDir)\Output\Evo\Files\Debug
 SignDir = $(ProjDir)\Output\Evo\Files\Debug\Sign\Flash
 !endif
 SrcDir = $(ProjDir)\Source
-VCSLibDir = C:\Users\specak\Documents\gitlab\evo_vcs_lib
+VCSLibDir = ..\..\evo_vcs_lib
 
 ##----------------------------------------------------------------
 ## File signature variables.
