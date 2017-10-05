@@ -1,22 +1,8 @@
-========================================================================
-    MAKEFILE PROJECT : evo_http_lib Project Overview
-========================================================================
 
-AppWizard has created this evo_http_lib project for you.  
+/////////////////////////////////////////////////////////////////////////////
 
-This file contains a summary of what you will find in each of the files that
-make up your evo_http_lib project.
-
-
-evo_http_lib.vcproj
-    This is the main project file for VC++ projects generated using an Application Wizard. 
-    It contains information about the version of Visual C++ that generated the file, and 
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-This project allows you to build/clean/rebuild from within Visual Studio by calling the commands you have input 
-in the wizard. The build command can be nmake or any other tool you use.
-
-This project does not contain any files, so there are none displayed in Solution Explorer.
+To start using HttpLib you have to make sure that your application is initialized with EESL_InitializeEx function.
+It is because underlying VCSLib uses 500B buffer for data exchange with VCS task.
+By using EESL_InitializeEx function we allow app using EESL buffers exceeding over 300B.
 
 /////////////////////////////////////////////////////////////////////////////
