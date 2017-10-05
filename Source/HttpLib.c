@@ -309,7 +309,7 @@ int _HttpSend(const void* request, int requestSize, const HttpContext* httpConte
 ///////////////////////////////////////////////////////////////////////////////
 // Code copied from old Http library.
 // Converts hex value (chunk length) to int.
-static int _HexToInt(HttpContext* handle, int* chunk_len) {
+/*static int _HexToInt(HttpContext* handle, int* chunk_len) {
 	unsigned short chunk_val = 0;
 	char *p = NULL;
 	unsigned char * possition_n = NULL;
@@ -397,7 +397,7 @@ static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int si
 		handle->init_chunk_size = handle->chunk_size;
 	// Return chunk size.
 	return handle->chunk_size;
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // Code copied from old Http library.
@@ -405,7 +405,7 @@ static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int si
 // If yes, then it reads following values: Content-Length, Transfer-Encoding.
 // Returns header length (if buffer does not contain complete header, then returns 0).
 //static int _ReadHttpHeader(HttpContext* handle, unsigned char* buffer, unsigned short size) {
-static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
+/*static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 	// Pointers used for data extraction.
 	unsigned char * data_start = NULL;
 	int header_size = 0;
@@ -440,10 +440,12 @@ static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
 	// Http header is not completed. Return length = 0.
 	else
 		return 0;
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
-static void _ExtractResponseProperties(const char* buffer, HttpContextNew* ctx) {
+// This function extracts properties values from response's header.
+// If any additional property's value is needed, code should be added here.
+static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
 	// Buffer for property's value.
 	char propertyValue[128] = { 0 };
 	// Result buffer.
@@ -461,12 +463,29 @@ static void _ExtractResponseProperties(const char* buffer, HttpContextNew* ctx) 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// This function finds last occurence of given value.
+static const char* _FindLast(const char* source, const char* value) {
+	const char* last = NULL;
+	const char* current = NULL;
+
+	for (;;) {
+		current = strstr(source, value);
+		if (current == NULL)
+			return last;
+		else {
+			source = current + 2;
+			last = current;
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // This function is responsible for receiving complete response header.
 // It parses properties and modifies HttpContext configuration.
 // Returns:
 // >= 0 : Data length left in buffer (part of response body).
 // < 0 : Error value.
-static int _ReadHeader(char* buffer, int bufferSize, HttpContextNew* ctx) {
+static int _ReadHeader(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Size of data received from VCS.
 	unsigned short dataReceived = 0;
 	// Status buffer.
@@ -483,16 +502,17 @@ static int _ReadHeader(char* buffer, int bufferSize, HttpContextNew* ctx) {
 
 	// Start receiving data from VCS.
 	do {
+		LOG_PRINTF(("Timeout: %d", ctx->Timeout));
 		result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)(buffer + bufferOffset), bufferSize - bufferOffset, &dataReceived, ctx->Timeout);
 		// Check for errors.
-		if (result != 0) {
-			LOG_PRINTF(("_ReadHeader() -> VCS_RecieveRawData() call returned: %d.", result));
-			return -1;
-		}
+		//if (result != 0) {
+		//	LOG_PRINTF(("_ReadHeader() -> VCS_RecieveRawData() call returned: %d.", result));
+		////	return -1;
+		//}
 		// Try to extract all required response's properties.
 		//_ExtractResponseProperties(buffer, ctx);
 		// Check if we recieved complete header (\r\n\r\n).
-		headerEnd = strstr(buffer, "\r\n\r\n");
+		headerEnd = strstr(buffer, HTTP_HEADER_TERMINATOR);
 		// If we received complete http header.
 		if (headerEnd != NULL) {
 			// We set complete header flag.
@@ -507,7 +527,7 @@ static int _ReadHeader(char* buffer, int bufferSize, HttpContextNew* ctx) {
 		else {
 			// Try to locate last complete property in this part.
 			// Next property (which is not complete) will be moved to buffer's beginning.
-			lastFullProperty = (char*)FindLast(buffer, "\r\n");
+			lastFullProperty = (char*)_FindLast(buffer, "\r\n");
 			// If we could not locate last complete property that means out buffer is too small.
 			if (lastFullProperty == NULL) {
 				// Buffer to small.
@@ -535,27 +555,67 @@ static int _ReadHeader(char* buffer, int bufferSize, HttpContextNew* ctx) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpRecv(char* buffer, int bufferSize, HttpContextNew* ctx) {
+static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ctx) {
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Returns >= 0 for number of bytes recieved.
+// < 0 for error.
+static int _ReceivePlainTransfer(char* buffer, int bufferSize, const HttpContext* ctx) {
+	int result = 0;
+	unsigned short dataRecieved = 0;
+
+	result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, &dataRecieved, ctx->Timeout);
+	// Check for errors.
+	//if (result != 0) {
+	//	LOG_PRINTF(("_ReceivePlainTransfer() -> VCS_RecieveRawData() call returned: %d.", result));
+	//	return -1;
+	//}
+	// No error, return number of bytes recieved.
+	return (int)dataRecieved;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Buffer for data received from VCS.
 	char httpBuffer[HTTP_BUFFER_SIZE] = { 0 };
 	// Result buffer.
 	int result = 0;
+	// How much data has been received.
+	int dataReceived = 0;
+	int i = 0;
+	char buf[4] = { 0 };
 
 	// Check if we already received response header.
 	if (!(ctx->Flags & HEADER_RECEIVED)) {
 		// We receive header.
 		result = _ReadHeader(httpBuffer, sizeof(httpBuffer), ctx);
+		LOG_PRINTF(("result = %d", result));
 		// Check for error.
 		if (result < 0) {
 			LOG_PRINTF(("_HttpRecv() -> _ReadHeader() call returned: %d.", result));
 			// For safety we return 0, as no data were received.
 			return 0;
 		}
+		// Move data to output buffer.
+		memcpy(buffer, httpBuffer, result);
 	}
+
+	// Here header is received completely, we can start receiving body.
+	// Depending on transfer type, we do either chunked or plain.
+	// Remember that we could have something in buffer after receiving header, so we always have to complete rather than rewite it.
+	if (ctx->Flags & TRANSFER_CHUNKED)
+		dataReceived = _ReceiveChunkedTransfer((buffer + result), (bufferSize - result), ctx);
+	else
+		dataReceived = _ReceivePlainTransfer((buffer + result), (bufferSize - result), ctx);
+
+	// And we return dataRecieved plus that that might be in buffer before (result).
+	return (dataReceived + result);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int __HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
+/*int __HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 	unsigned short rc_size = 0;
 	int rc_total_size = 0;
 	int header_size = 0;
@@ -647,4 +707,4 @@ int __HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 		LOG_PRINTF((buffer));
 		return rc_size;
 	}
-}
+}*/

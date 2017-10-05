@@ -46,45 +46,45 @@ extern "C" {
 	} HttpFlags;
 
 	///////////////////////////////////////////////////////////////////////////////
-	typedef struct HttpContextNew {
-		// Session handle used for VCS communication.
-		unsigned short VCSSessionHandle;
-		// Global timeout setting.
-		unsigned long Timeout;
-		// Flags.
-		unsigned int Flags;
-		// Response content length.
-		size_t ContentLength;
-	} HttpContextNew;
-
-	///////////////////////////////////////////////////////////////////////////////
-	// This struct contains data required for HTTP communication.
-	// Is used as Http interface argument.
 	typedef struct HttpContext {
 		// Session handle used for VCS communication.
 		unsigned short VCSSessionHandle;
 		// Global timeout setting.
 		long Timeout;
-
-		// This part is copied from old _csh struct.
-		// Corrected int fileds to unsigned int not to get -1 value on output.
-		unsigned short rc_data;				/**< przechowuje iloœæ danych w buforze roboczym */
-		unsigned short rc_pos;				/**< przechowuje pozycje w buforze roboczym */
-		unsigned char index;				/**< indek w tablicy po³azeñ ComService */
-		unsigned short chunk_size; 			/**< rozmiar bie¿¹cego chunka (post-parser)*/
-		unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
-		// Http context flags.
-		unsigned char Flags;
-		// Response body length.
-		unsigned long ContentLength;
-		long rc_size;						/**< iloœc danych odebranych */
-		long tr_size;						/**< iloœæ danych wys³anych */
-		long rc_parser;						/**< rozmiar danych odebranych i przetworzonych przez zewnêtrzny parser protoko³u warstwy aplikacji np http (post-parser)*/
-		unsigned char * parser_buffer; 		/**< wskaŸnik na bufor dodatkowy roboczy (post-parser)*/
-		unsigned short parser_buffer_size; 	/**<  bierz¹cy rozmiar danych w dodatkowym buforze roboczym (post-parser)*/
-		unsigned char chunk_tmp_buffer[PARSER_TMP_BUFFER];		/**< tymczasowy bufor roboczy (post-parser)*/
-		unsigned short chunk_tmp_size;		/** rozmiar bie¿¹cego chunka (post-parser)*/
+		// Flags.
+		unsigned int Flags;
+		// Response content length.
+		unsigned int ContentLength;
 	} HttpContext;
+
+	///////////////////////////////////////////////////////////////////////////////
+	// This struct contains data required for HTTP communication.
+	// Is used as Http interface argument.
+	//typedef struct HttpContext {
+	//	// Session handle used for VCS communication.
+	//	unsigned short VCSSessionHandle;
+	//	// Global timeout setting.
+	//	long Timeout;
+
+	//	// This part is copied from old _csh struct.
+	//	// Corrected int fileds to unsigned int not to get -1 value on output.
+	//	unsigned short rc_data;				/**< przechowuje iloœæ danych w buforze roboczym */
+	//	unsigned short rc_pos;				/**< przechowuje pozycje w buforze roboczym */
+	//	unsigned char index;				/**< indek w tablicy po³azeñ ComService */
+	//	unsigned short chunk_size; 			/**< rozmiar bie¿¹cego chunka (post-parser)*/
+	//	unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
+	//	// Http context flags.
+	//	unsigned char Flags;
+	//	// Response body length.
+	//	unsigned long ContentLength;
+	//	long rc_size;						/**< iloœc danych odebranych */
+	//	long tr_size;						/**< iloœæ danych wys³anych */
+	//	long rc_parser;						/**< rozmiar danych odebranych i przetworzonych przez zewnêtrzny parser protoko³u warstwy aplikacji np http (post-parser)*/
+	//	unsigned char * parser_buffer; 		/**< wskaŸnik na bufor dodatkowy roboczy (post-parser)*/
+	//	unsigned short parser_buffer_size; 	/**<  bierz¹cy rozmiar danych w dodatkowym buforze roboczym (post-parser)*/
+	//	unsigned char chunk_tmp_buffer[PARSER_TMP_BUFFER];		/**< tymczasowy bufor roboczy (post-parser)*/
+	//	unsigned short chunk_tmp_size;		/** rozmiar bie¿¹cego chunka (post-parser)*/
+	//} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This method intializes request's header.
@@ -194,11 +194,7 @@ extern "C" {
 #ifdef HttpSetRequestBody
 #undef HttpSetRequestBody
 #endif	// HttpSetRequestBody
-#ifndef HTTP_3DES_ENCRYPTION
 #define HttpSetRequestBody _HttpSetRequestBody
-#else
-#define HttpSetRequestBody
-#endif	// HTTP_3DES_ENCRYPTION
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef HttpSend

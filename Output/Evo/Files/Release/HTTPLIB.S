@@ -1,0 +1,107 @@
+; Stub File for Library HTTPLIB
+; Generated from HTTPLIB.LID version 1.0 on 05 Oct 2017 15:18
+
+	PRESERVE8
+	AREA	||.1_vrx_libtbl||,CODE,READONLY
+	DCB	"HTTPLIB.LIB",0
+	DCD	0
+
+	AREA	||.text||,CODE,READONLY
+	EXPORT	_HTTPLIB_VERSION
+_HTTPLIB_VERSION
+	DCW	0x0100
+_LIB27_USED	EQU	0x0100
+	ALIGN	4
+
+	EXPORT	_HttpInitRequest ; 1
+_HttpInitRequest
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A80061
+	EXPORT	_HttpSetProperty ; 2
+_HttpSetProperty
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A80071
+	EXPORT	_HttpSetRequestBody ; 3
+_HttpSetRequestBody
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A80081
+	EXPORT	_HttpConnect   ; 4
+_HttpConnect
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A80091
+	EXPORT	_HttpDisconnect ; 5
+_HttpDisconnect
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800A1
+	EXPORT	_HttpSend      ; 6
+_HttpSend
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800B1
+	EXPORT	_HttpRecv      ; 7
+_HttpRecv
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800C1
+	EXPORT	_HttpSetRequestBodyRaw ; 8
+_HttpSetRequestBodyRaw
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800D1
+	EXPORT	_HttpCompleteRequest ; 9
+_HttpCompleteRequest
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800E1
+	EXPORT	_HttpGetProperty ; 10
+_HttpGetProperty
+	CODE16
+	BX	PC
+	NOP
+	CODE32
+	LDR	IP,[PC]
+	BX	IP
+	DCD	0x70A800F1
+
+	END
