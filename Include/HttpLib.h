@@ -11,6 +11,9 @@
 #define HTTP_CHUNKED		(1)
 #define HTTP_ENDING_CHUNK	(1 << 1)
 
+#define HTTP_BUFFER_SIZE 256
+#define HTTP_HEADER_TERMINATOR "\r\n\r\n"
+
 #ifdef __cplusplus
 extern "C" {
 #endif	// __cplusplus
@@ -47,9 +50,11 @@ extern "C" {
 		// Session handle used for VCS communication.
 		unsigned short VCSSessionHandle;
 		// Global timeout setting.
-		long Timeout;
+		unsigned long Timeout;
 		// Flags.
-		unsigned long Flags;
+		unsigned int Flags;
+		// Response content length.
+		size_t ContentLength;
 	} HttpContextNew;
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -113,6 +118,9 @@ extern "C" {
 	// Returns: Non-zero value on error.
 	extern int _HttpSetProperty(const char*, const char*, char*, int);
 	// This function gets property value from request/response.
+	// Returns non-zero value on error.
+	// -1 : Property is not terminated correctly.
+	// -2 : Property not found.
 	extern int _HttpGetProperty(const char*, char*, int, const char*);
 
 	///////////////////////////////////////////////////////////////////////////////

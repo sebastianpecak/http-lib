@@ -144,7 +144,7 @@ int _HttpSetProperty(const char* key, const char* value, char* request, int requ
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* http) {
+/*int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* http) {
 	const char* propertyFound = NULL;
 	const char* propertyTerm = NULL;
 	int valueSize = 0;
@@ -164,6 +164,38 @@ int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* 
 	}
 
 	return 0;
+}*/
+
+///////////////////////////////////////////////////////////////////////////////
+int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* http) {
+	const char* propertyFound = NULL;
+	const char* propertyTerm = NULL;
+	int valueSize = 0;
+	int result = -2;
+
+	LOG_PRINTF(("_HttpGetProperty() -> Start."));
+
+	// Seek for key.
+	propertyFound = strstr(http, key);
+	if (propertyFound != NULL) {
+		// Find terminator.
+		propertyTerm = strstr(propertyFound, "\r\n");
+		// Check if we found property terminator.
+		if (propertyTerm == NULL)
+			// Property is not correct.
+			result = -1;
+		else {
+			// Check if buffer is big enough to store property's value (1 is :).
+			valueSize = (int)(propertyTerm - propertyFound - strlen(key) - 1);
+			strncpy(buffer, (propertyFound + strlen(key) + 1), valueSize);
+			// Set string terminator.
+			buffer[valueSize] = '\0';
+			// Set resuklt success.
+			result = 0;
+		}
+	}
+
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,48 +304,7 @@ int _HttpSend(const void* request, int requestSize, const HttpContext* httpConte
 	return VCS_TransmitRawData(httpContext->VCSSessionHandle, request, requestSize, httpContext->Timeout);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Code copied from old Http library.
-// Checks if buffer contains complete Http response header (\r\n\r\n).
-// If yes, then it reads following values: Content-Length, Transfer-Encoding.
-// Returns header length (if buffer does not contain complete header, then returns 0).
-//static int _ReadHttpHeader(HttpContext* handle, unsigned char* buffer, unsigned short size) {
-static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
-	// Pointers used for data extraction.
-	unsigned char * data_start = NULL;
-	int header_size = 0;
-	char textBuffer[32] = { 0 };
 
-	LOG_PRINTF(("_ReadHttpHeader() -> Start."));
-
-	// Check if we deal with complete header.
-	data_start = strstr(buffer, "\r\n\r\n");
-	if (data_start != NULL) {
-		// Konieczne zostawienie 2 aby odnaleŸæ chunk.
-		data_start += 2;
-		// Calculate header size.
-		header_size = (int)(data_start - buffer);
-		// Wype³nijmy strukture.
-		_HttpGetProperty("Content-Length", textBuffer, sizeof(textBuffer), buffer);
-		httpCtx->ContentLength = atoi(textBuffer);
-		_HttpGetProperty("Transfer-Encoding", textBuffer, sizeof(textBuffer), buffer);
-		// If we have chunked transfer.
-		if (strstr(textBuffer, "chunked") != NULL)
-			httpCtx->Flags |= HTTP_CHUNKED;
-		else {
-			httpCtx->Flags &= ~HTTP_CHUNKED;
-			// Ok nie ma chunka wiêc usuñmy.
-			header_size += 2;
-		}
-		// przesuñmy dane do pocz¹tku !!! i zwróæmy rozmiar bez nag³ówka
-		memmove(buffer, (buffer + header_size), (bufferSize - header_size - 8));
-		// Return header length.
-		return header_size;
-	}
-	// Http header is not completed. Return length = 0.
-	else
-		return 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Code copied from old Http library.
@@ -409,8 +400,158 @@ static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int si
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpRecv(char* buffer, int bufferSize, HttpContext2* ctx) {
+// Code copied from old Http library.
+// Checks if buffer contains complete Http response header (\r\n\r\n).
+// If yes, then it reads following values: Content-Length, Transfer-Encoding.
+// Returns header length (if buffer does not contain complete header, then returns 0).
+//static int _ReadHttpHeader(HttpContext* handle, unsigned char* buffer, unsigned short size) {
+static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
+	// Pointers used for data extraction.
+	unsigned char * data_start = NULL;
+	int header_size = 0;
+	char textBuffer[32] = { 0 };
 
+	LOG_PRINTF(("_ReadHttpHeader() -> Start."));
+
+	// Check if we deal with complete header.
+	data_start = strstr(buffer, "\r\n\r\n");
+	if (data_start != NULL) {
+		// Konieczne zostawienie 2 aby odnaleŸæ chunk.
+		data_start += 2;
+		// Calculate header size.
+		header_size = (int)(data_start - buffer);
+		// Wype³nijmy strukture.
+		_HttpGetProperty("Content-Length", textBuffer, sizeof(textBuffer), buffer);
+		httpCtx->ContentLength = atoi(textBuffer);
+		_HttpGetProperty("Transfer-Encoding", textBuffer, sizeof(textBuffer), buffer);
+		// If we have chunked transfer.
+		if (strstr(textBuffer, "chunked") != NULL)
+			httpCtx->Flags |= HTTP_CHUNKED;
+		else {
+			httpCtx->Flags &= ~HTTP_CHUNKED;
+			// Ok nie ma chunka wiêc usuñmy.
+			header_size += 2;
+		}
+		// przesuñmy dane do pocz¹tku !!! i zwróæmy rozmiar bez nag³ówka
+		memmove(buffer, (buffer + header_size), (bufferSize - header_size - 8));
+		// Return header length.
+		return header_size;
+	}
+	// Http header is not completed. Return length = 0.
+	else
+		return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+static void _ExtractResponseProperties(const char* buffer, HttpContextNew* ctx) {
+	// Buffer for property's value.
+	char propertyValue[128] = { 0 };
+	// Result buffer.
+	int result = 0;
+
+	// Get Content-Length.
+	result = _HttpGetProperty("Content-Length", propertyValue, sizeof(propertyValue), buffer);
+	if (result == 0)
+		ctx->ContentLength = (size_t)atoi(propertyValue);
+	// Get Transfer-Encoding.
+	result = _HttpGetProperty("Transfer-Encoding", propertyValue, sizeof(propertyValue), buffer);
+	// If we have chunked transfer, set flag.
+	if (strstr(propertyValue, "chunked") != NULL)
+		ctx->Flags |= TRANSFER_CHUNKED;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// This function is responsible for receiving complete response header.
+// It parses properties and modifies HttpContext configuration.
+// Returns:
+// >= 0 : Data length left in buffer (part of response body).
+// < 0 : Error value.
+static int _ReadHeader(char* buffer, int bufferSize, HttpContextNew* ctx) {
+	// Size of data received from VCS.
+	unsigned short dataReceived = 0;
+	// Status buffer.
+	int result = 0;
+	// Header terminator.
+	char* headerEnd = NULL;
+	// Pointer to last full property that has been read.
+	// Data following that point will be moved to buffer's beginning.
+	char* lastFullProperty = NULL;
+	// Data left in buffer.
+	size_t dataLeft = 0;
+	// Buffer offset (used when some data left in buffer).
+	size_t bufferOffset = 0;
+
+	// Start receiving data from VCS.
+	do {
+		result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)(buffer + bufferOffset), bufferSize - bufferOffset, &dataReceived, ctx->Timeout);
+		// Check for errors.
+		if (result != 0) {
+			LOG_PRINTF(("_ReadHeader() -> VCS_RecieveRawData() call returned: %d.", result));
+			return -1;
+		}
+		// Try to extract all required response's properties.
+		//_ExtractResponseProperties(buffer, ctx);
+		// Check if we recieved complete header (\r\n\r\n).
+		headerEnd = strstr(buffer, "\r\n\r\n");
+		// If we received complete http header.
+		if (headerEnd != NULL) {
+			// We set complete header flag.
+			ctx->Flags |= HEADER_RECEIVED;
+			// We calculate how much data is body.
+			bufferOffset = (dataReceived - (unsigned short)(headerEnd - buffer)) - 4;
+			// Now we shift data that belongs to body at buffer's beginning.
+			memmove(buffer, (headerEnd + 4), bufferOffset);
+			// Here we gonna leave loop.
+		}
+		// We have just another header part.
+		else {
+			// Try to locate last complete property in this part.
+			// Next property (which is not complete) will be moved to buffer's beginning.
+			lastFullProperty = (char*)FindLast(buffer, "\r\n");
+			// If we could not locate last complete property that means out buffer is too small.
+			if (lastFullProperty == NULL) {
+				// Buffer to small.
+				return -1;
+			}
+			// If lastFullProperty is last 2 charatcres of buffer, we have to keep it.
+			if ((buffer + dataReceived + bufferOffset - lastFullProperty) == 2) {
+				// 2 as we keep 2 charactres.
+				bufferOffset = 2;
+				buffer[0] = '\r';
+				buffer[1] = '\n';
+			}
+			// Otherwise we omit \r\n as it indicates end of property.
+			// We move what left in buffer.
+			else {
+				// Calculate size of data left in buffer.
+				bufferOffset = bufferSize - (lastFullProperty - buffer) - 2;
+				memmove(buffer, lastFullProperty + 2, bufferOffset);
+			}
+		}
+	} while (!(ctx->Flags & HEADER_RECEIVED));
+
+	// Return how much data left in buffer.
+	return bufferOffset;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int _HttpRecv(char* buffer, int bufferSize, HttpContextNew* ctx) {
+	// Buffer for data received from VCS.
+	char httpBuffer[HTTP_BUFFER_SIZE] = { 0 };
+	// Result buffer.
+	int result = 0;
+
+	// Check if we already received response header.
+	if (!(ctx->Flags & HEADER_RECEIVED)) {
+		// We receive header.
+		result = _ReadHeader(httpBuffer, sizeof(httpBuffer), ctx);
+		// Check for error.
+		if (result < 0) {
+			LOG_PRINTF(("_HttpRecv() -> _ReadHeader() call returned: %d.", result));
+			// For safety we return 0, as no data were received.
+			return 0;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
