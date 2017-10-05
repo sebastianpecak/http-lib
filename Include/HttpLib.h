@@ -36,6 +36,23 @@ extern "C" {
 	} HttpMethod;
 
 	///////////////////////////////////////////////////////////////////////////////
+	typedef enum HttpFlags {
+		TRANSFER_CHUNKED = 1,
+		ENDING_CHUNK = 2,
+		HEADER_RECEIVED = 4
+	} HttpFlags;
+
+	///////////////////////////////////////////////////////////////////////////////
+	typedef struct HttpContextNew {
+		// Session handle used for VCS communication.
+		unsigned short VCSSessionHandle;
+		// Global timeout setting.
+		long Timeout;
+		// Flags.
+		unsigned long Flags;
+	} HttpContextNew;
+
+	///////////////////////////////////////////////////////////////////////////////
 	// This struct contains data required for HTTP communication.
 	// Is used as Http interface argument.
 	typedef struct HttpContext {
@@ -53,8 +70,6 @@ extern "C" {
 		unsigned short init_chunk_size; 	/**< rozmiar chunka inicjalizujacego (post-parser)*/
 		// Http context flags.
 		unsigned char Flags;
-		//unsigned int ending_chunk : 1;				/**< czy to czhunk koñcz¹cy chunk (post-parser)*/
-		//unsigned int chunked : 1;					/**< czy po³¹czenie chunkowane (post-parser)*/
 		// Response body length.
 		unsigned long ContentLength;
 		long rc_size;						/**< iloœc danych odebranych */

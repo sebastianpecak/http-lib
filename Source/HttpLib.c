@@ -409,7 +409,12 @@ static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int si
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
+int _HttpRecv(char* buffer, int bufferSize, HttpContext2* ctx) {
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int __HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
 	unsigned short rc_size = 0;
 	int rc_total_size = 0;
 	int header_size = 0;
