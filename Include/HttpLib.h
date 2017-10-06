@@ -1,18 +1,10 @@
 #ifndef HTTPLIB_H
 #define HTTPLIB_H
 
-// Comstants copied from old HTTP library.
-#define HTTP_MAX_HEADER		300
-#define HTTP_MIN_HEADER		140
-#define HTTP_MAX_CHUNK_LEN	8
-#define PARSER_TMP_BUFFER	32
-#define HTTP_MAX_CHUNK_SIZE	4096
-// Http flags values.
-#define HTTP_CHUNKED		(1)
-#define HTTP_ENDING_CHUNK	(1 << 1)
-
-#define HTTP_BUFFER_SIZE 256
-#define HTTP_HEADER_TERMINATOR "\r\n\r\n"
+///////////////////////////////////////////////////////////////////////////////
+// Library defines.
+#define HTTP_BUFFER_SIZE				256
+#define HTTP_HEADER_TERMINATOR			"\r\n\r\n"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,12 +41,19 @@ extern "C" {
 	typedef struct HttpContext {
 		// Session handle used for VCS communication.
 		unsigned short VCSSessionHandle;
-		// Global timeout setting.
-		long Timeout;
+		// Global timeout setting (in miliseconds).
+		unsigned short Timeout;
+		// Receive timeout (in seconds).
+		unsigned short RecvTimeout;
 		// Flags.
 		unsigned int Flags;
 		// Response content length.
 		unsigned int ContentLength;
+		// Buffer for data.
+		char* DataBuffer;
+		unsigned int DataBufferSize;
+		// Size of data currently stored in buffer.
+		unsigned int DataInBuffer;
 	} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -162,7 +161,7 @@ extern "C" {
 	// 1) Request (null-terminated string).
 	// 2) Valid HttpContext pointer.
 	// Returns: Non-zero value on error.
-	extern int _HttpSend(const void*, int, const HttpContext*);
+	extern int _HttpSend(const void*, int, HttpContext*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	extern int _HttpRecv(char*, int, HttpContext*);

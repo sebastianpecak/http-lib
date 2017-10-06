@@ -604,6 +604,8 @@ static int _ReceivePlainTransfer(char* buffer, int bufferSize, const HttpContext
 ///////////////////////////////////////////////////////////////////////////////
 // Here we specify how much data we can recieve.
 int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
+	// Buffer for data received from VCS.
+	//char httpBuffer[HTTP_BUFFER_SIZE] = { 0 };
 	// Result buffer.
 	int result = 0;
 	// How much data has been received.
