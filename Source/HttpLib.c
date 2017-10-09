@@ -144,36 +144,11 @@ int _HttpSetProperty(const char* key, const char* value, char* request, int requ
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/*int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* http) {
-	const char* propertyFound = NULL;
-	const char* propertyTerm = NULL;
-	int valueSize = 0;
-
-	LOG_PRINTF(("_HttpGetProperty() -> Start."));
-
-	// Seek for key.
-	propertyFound = strstr(http, key);
-	if (propertyFound != NULL) {
-		// Find terminator.
-		propertyTerm = strstr(propertyFound, "\r\n");
-		// Check if buffer is big enough to store property's value (1 is :).
-		valueSize = (int)(propertyTerm - propertyFound - strlen(key) - 1);
-		strncpy(buffer, (propertyFound + strlen(key) + 1), valueSize);
-		// Set string terminator.
-		buffer[valueSize] = '\0';
-	}
-
-	return 0;
-}*/
-
-///////////////////////////////////////////////////////////////////////////////
 int _HttpGetProperty(const char* key, char* buffer, int bufferSize, const char* http) {
 	const char* propertyFound = NULL;
 	const char* propertyTerm = NULL;
 	int valueSize = 0;
 	int result = -2;
-
-	LOG_PRINTF(("_HttpGetProperty() -> Start."));
 
 	// Seek for key.
 	propertyFound = strstr(http, key);
@@ -206,8 +181,6 @@ int _HttpSetRequestBody(const char* body, char* request, int requestSize) {
 	int result = 0;
 	// Text buffer.
 	char textBuffer[16] = { 0 };
-
-	LOG_PRINTF(("_HttpSetRequestBody() -> Start."));
 
 	// Check parameter validity.
 	if (request && requestSize > 0) {
@@ -245,8 +218,6 @@ int _HttpSetRequestBodyRaw(const void* bodyRaw, int bodySize, char* request, int
 	char buffer[16] = { 0 };
 	// Request header length.
 	int headerLength = 0;
-
-	LOG_PRINTF(("_HttpSetRequestBodyRaw() -> Start."));
 
 	sprintf(buffer, "%d", bodySize);
 	_HttpSetProperty("Content-Length", buffer, request, requestSize);
@@ -322,140 +293,31 @@ int _HttpSend(const void* request, int requestSize, HttpContext* httpContext) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Code copied from old Http library.
-// Converts hex value (chunk length) to int.
-/*static int _HexToInt(HttpContext* handle, int* chunk_len) {
-	unsigned short chunk_val = 0;
-	char *p = NULL;
-	unsigned char * possition_n = NULL;
-	unsigned char * possition_m = NULL;
-	int i = 0;
+// This function converts hex string to integer value.
+// As parameters it takes: string pointer and its length (path of big buffer).
+// Returns converted value.
+static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
+	// Null-terminated copy of hexString.
+	char* hexZeroString = NULL;
+	// Result buffer.
+	int result = 0;
 
-	LOG_PRINTF(("_HexToInt() -> Start."));
-
-	chunk_val = (unsigned short)strtol((const char *)handle->chunk_tmp_buffer, (char**)&p, 16);
-
-	if (chunk_val <= 0)
-		return 0;
-	// This limitaion comes from old Http library (for omni terminals especially).
-	// Probaly will be removed in the future.
-	if (chunk_val > HTTP_MAX_CHUNK_SIZE)
+	// Allocate buffer for copy of hexString (null-terminated).
+	hexZeroString = malloc(hexStringLength + 1);
+	// Check for errors.
+	if (hexZeroString == NULL)
+		// Return error.
 		return -1;
-
-	while ((handle->chunk_tmp_buffer[i] != '\r') && (i < HTTP_MAX_CHUNK_LEN))
-		++i;
-
-	possition_n = handle->chunk_tmp_buffer + i;
-	i = 1;
-
-	while ((possition_n[i] != '\r') && (i < HTTP_MAX_CHUNK_LEN))
-		++i;
-
-	if (i <= HTTP_MAX_CHUNK_LEN)
-		possition_m = possition_n + i + 2;
-	else
-		return -1;
-
-	*chunk_len = (int)(possition_m - possition_n);
-
-	return chunk_val;
+	// Set string terminator.
+	hexZeroString[hexStringLength] = '\0';
+	// Copy string.
+	strncpy(hexZeroString, hexString, hexStringLength);
+	// Convert value.
+	result = strtol(hexZeroString, NULL, 16);
+	// Free buffer.
+	free(hexZeroString);
+	return result;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-static int _ReadNextChunkSize(HttpContext* handle, unsigned char* buffer, int size, int* chunk_len) {
-	unsigned short rc_size = 0;
-	int rc_size_total = 0;
-	unsigned short size_orig = size;
-	unsigned short pattern_count = 0;
-	int init_offset = 0;
-	char pattern[] = "\r\n";
-	handle->parser_buffer_size = 0L;
-
-	LOG_PRINTF(("_ReadNextChunkSize() -> Start."));
-
-	// Buffer for text hex value.
-	memset(handle->chunk_tmp_buffer, 0, HTTP_MAX_CHUNK_LEN);
-
-	if (handle->rc_parser == 0) {
-		init_offset = 2;
-		handle->chunk_tmp_buffer[0] = '\r';
-		handle->chunk_tmp_buffer[1] = '\n';
-	}
-
-	while ((rc_size_total + init_offset) < HTTP_MAX_CHUNK_LEN) {
-		int i = 0;
-		VCS_RecieveRawData(handle->VCSSessionHandle, (handle->chunk_tmp_buffer + init_offset + rc_size_total), 1, &rc_size, handle->Timeout);
-		if (rc_size <= 0)
-			return 0;
-
-		rc_size_total += rc_size;
-		pattern_count = 0;
-
-		for (i = 0; i < (rc_size_total + init_offset) - 1; ++i) {
-			if (memcmp(handle->chunk_tmp_buffer + i, pattern, 2) == 0)
-				pattern_count++;
-		}
-
-		if (pattern_count == 2)
-			break;
-	}
-
-	if (pattern_count != 2)
-		return 0;
-
-	// ok mamy chunka w buforze...
-	handle->chunk_size = _HexToInt(handle, chunk_len);
-	if (handle->chunk_size <= 0)
-		return 0;
-	//chunk startowy
-	if (handle->rc_parser == 0)
-		handle->init_chunk_size = handle->chunk_size;
-	// Return chunk size.
-	return handle->chunk_size;
-}*/
-
-///////////////////////////////////////////////////////////////////////////////
-// Code copied from old Http library.
-// Checks if buffer contains complete Http response header (\r\n\r\n).
-// If yes, then it reads following values: Content-Length, Transfer-Encoding.
-// Returns header length (if buffer does not contain complete header, then returns 0).
-//static int _ReadHttpHeader(HttpContext* handle, unsigned char* buffer, unsigned short size) {
-/*static int _ReadHttpHeader(HttpContext* httpCtx, char* buffer, int bufferSize) {
-	// Pointers used for data extraction.
-	unsigned char * data_start = NULL;
-	int header_size = 0;
-	char textBuffer[32] = { 0 };
-
-	LOG_PRINTF(("_ReadHttpHeader() -> Start."));
-
-	// Check if we deal with complete header.
-	data_start = strstr(buffer, "\r\n\r\n");
-	if (data_start != NULL) {
-		// Konieczne zostawienie 2 aby odnaleŸæ chunk.
-		data_start += 2;
-		// Calculate header size.
-		header_size = (int)(data_start - buffer);
-		// Wype³nijmy strukture.
-		_HttpGetProperty("Content-Length", textBuffer, sizeof(textBuffer), buffer);
-		httpCtx->ContentLength = atoi(textBuffer);
-		_HttpGetProperty("Transfer-Encoding", textBuffer, sizeof(textBuffer), buffer);
-		// If we have chunked transfer.
-		if (strstr(textBuffer, "chunked") != NULL)
-			httpCtx->Flags |= HTTP_CHUNKED;
-		else {
-			httpCtx->Flags &= ~HTTP_CHUNKED;
-			// Ok nie ma chunka wiêc usuñmy.
-			header_size += 2;
-		}
-		// przesuñmy dane do pocz¹tku !!! i zwróæmy rozmiar bez nag³ówka
-		memmove(buffer, (buffer + header_size), (bufferSize - header_size - 8));
-		// Return header length.
-		return header_size;
-	}
-	// Http header is not completed. Return length = 0.
-	else
-		return 0;
-}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function extracts properties values from response's header.
@@ -536,7 +398,7 @@ static int _ReadHeader(HttpContext* ctx) {
 			// We set complete header flag.
 			ctx->Flags |= HEADER_RECEIVED;
 			// We calculate how much data is body.
-			bufferOffset = (dataReceived - (unsigned short)(headerEnd - ctx->DataBuffer)) - 4;
+			bufferOffset = (dataReceived + bufferOffset - (unsigned short)(headerEnd - ctx->DataBuffer)) - 4;
 			// Now we shift data that belongs to body at buffer's beginning.
 			memmove(ctx->DataBuffer, (headerEnd + 4), bufferOffset);
 			// Here we gonna leave loop.
@@ -580,25 +442,174 @@ static int _ReadHeader(HttpContext* ctx) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ctx) {
+static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataReceived) {
+	// Result buffer.
+	int result = 0;
+	// Chunk size terminator pointer.
+	char* chunkTerminator = NULL;
+	unsigned int toRecv = 0;
+	// Number of bytes recieved in current call.
+	unsigned int dataRecvTotal = 0;
+	// Size of data received by VCS_RecieveRawData.
+	*dataReceived = 0;
+
 	LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
+
+	// Check if we are reading chunk right now.
+	// If not we have to find chunk size first.
+	if (!(ctx->Flags & READING_CHUNK)) {
+		// If we have no data in DataBuffer we have to fill it up.
+		// [Value]\r\n.
+		if (ctx->DataInBuffer < 3) {
+			result = VCS_RecieveRawData(
+				ctx->VCSSessionHandle,
+				(unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
+				(ctx->DataBufferSize - ctx->DataInBuffer),
+				dataReceived,
+				ctx->RecvTimeout
+			);
+			// Check for error.
+			if (result != 0) {
+				LOG_PRINTF(("_ReceiveChunkedTransfer() -> VCS_RecieveRawData call returned: %d.", result));
+				return result;
+			}
+			// Increase DataInBuffer by dataReceived.
+			ctx->DataInBuffer += *dataReceived;
+		}
+		// It could happen that first 2 characters will be \r\n, so we have to omit them.
+		if (ctx->DataBuffer[0] == '\r' && ctx->DataBuffer[1] == '\n') {
+			memmove(ctx->DataBuffer, (ctx->DataBuffer + 2), (ctx->DataInBuffer - 2));
+			ctx->DataInBuffer -= 2;
+		}
+		// Here we have buffer filled up with data.
+		// Find chunk size terminator (\r\n).
+		chunkTerminator = strstr(ctx->DataBuffer, "\r\n");
+		// Check if we found terminator.
+		if (chunkTerminator == NULL) {
+			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Did not find chunk terminator in buffer."));
+			return -1;
+		}
+		// Save new chunk size.
+		ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
+		// If chunk size is 0, then we received ending chunk.
+		if (ctx->ChunkSize == 0) {
+			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Received ending chunk."));
+			*dataReceived = 0;
+			return 0;
+		}
+		// Set flag that we are receiving chunk.
+		ctx->Flags |= READING_CHUNK;
+		// Throw out chunk size from DataBuffer.
+		ctx->DataInBuffer = (ctx->DataInBuffer - (chunkTerminator - ctx->DataBuffer) - 2);
+		memmove(ctx->DataBuffer, (chunkTerminator + 2), ctx->DataInBuffer);
+	}
+
+	// Calculate how much data we should receive in this call (what left for current chunk).
+	toRecv = (ctx->ChunkSize - ctx->ChunkRead);
+	// If it is more than we can store in output buffer then we limit use bufferSize as limit.
+	toRecv = (toRecv > bufferSize ? bufferSize : toRecv);
+
+	// If we have anything in buffer we have to receive it first.
+	if (ctx->DataInBuffer > toRecv) {
+		// We receive toRecv.
+		memcpy(buffer, ctx->DataBuffer, toRecv);
+		// Shift data in buffer.
+		memmove(ctx->DataBuffer, (ctx->DataBuffer + toRecv), (ctx->DataInBuffer - toRecv));
+		// Decrease DataInBuffer size.
+		ctx->DataInBuffer -= toRecv;
+		// Set dataReceived.
+		dataRecvTotal = toRecv;
+		// Increase ChunkRead.
+		ctx->ChunkRead += toRecv;
+		// Reset toRecv as we already received all allowed bytes.
+		toRecv = 0;
+	}
+	else if (ctx->DataInBuffer > 0 && ctx->DataInBuffer < toRecv) {
+		// Get everything from DataBuffer.
+		memcpy(buffer, ctx->DataBuffer, ctx->DataInBuffer);
+		// Decrease toRecv by DataInBuffer value.
+		toRecv -= ctx->DataInBuffer;
+		// Set dataReceived.
+		dataRecvTotal = ctx->DataInBuffer;
+		// Increase ChunkRead.
+		ctx->ChunkRead += ctx->DataInBuffer;
+		// Reset data in buffer.
+		ctx->DataInBuffer = 0;
+	}
+
+	// Use VCS_Recv to receive all left toRecv bytes.
+	result = VCS_RecieveRawData(
+		ctx->VCSSessionHandle,
+		(unsigned char*)(buffer + dataRecvTotal),
+		toRecv,
+		dataReceived,
+		ctx->RecvTimeout
+	);
+	// Check for errors.
+	//if (result != 0) {
+	//	LOG_PRINTF(("_ReceiveChunkedTransfer() -> VCS_RecieveRawData() call returned: %d.", result));
+	//	return -1;
+	//}
+	// Increase dataRecvTotal by dataReceived (in current call).
+	dataRecvTotal += *dataReceived;
+	// Increase ChunkRead as global state variable.
+	ctx->ChunkRead += *dataReceived;
+
+	// Check if we completly read current chunk.
+	if (ctx->ChunkRead == ctx->ChunkSize) {
+		// Reset receiving flag.
+		ctx->Flags &= ~READING_CHUNK;
+		// Reset chunk read.
+		ctx->ChunkRead = 0;
+	}
+
+	// Save datReceived.
+	*dataReceived = dataRecvTotal;
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Returns >= 0 for number of bytes recieved.
-// < 0 for error.
-static int _ReceivePlainTransfer(char* buffer, int bufferSize, const HttpContext* ctx) {
+// This function receives http data in plain encoding.
+// Returns:
+// 0 : On success.
+// < 0 : On error.
+static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataRecieved) {
 	int result = 0;
-	unsigned short dataRecieved = 0;
+	int dataToBeCopied = 0;
 
-	result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, &dataRecieved, ctx->RecvTimeout);
-	// Check for errors.
-	if (result != 0) {
-		LOG_PRINTF(("_ReceivePlainTransfer() -> VCS_RecieveRawData() call returned: %d.", result));
-		return 0;
+	LOG_PRINTF(("_ReceivePlainTransfer() ->"));
+
+	// If we have data in DataBuffer, we receive it first.
+	if (ctx->DataInBuffer > 0) {
+		// Calculate how much data we can recieve at once.
+		dataToBeCopied = (ctx->DataInBuffer > bufferSize ? bufferSize : ctx->DataInBuffer);
+		// Copy to output buffer.
+		memcpy(buffer, ctx->DataBuffer, dataToBeCopied);
+		// Decrease DataInBuffer value by dataToBeCopied, as it is already received.
+		ctx->DataInBuffer -= dataToBeCopied;
+		// Shift data in buffer by those we received.
+		memmove(ctx->DataBuffer, (ctx->DataBuffer + dataToBeCopied), ctx->DataInBuffer);
+		// Set how much data we already copied.
+		*dataRecieved = dataToBeCopied;
+		// If dataToBeCopied is less than buffer size, we get additional data from VCS.
+		if (dataToBeCopied < bufferSize) {
+			result = VCS_RecieveRawData(
+				ctx->VCSSessionHandle,
+				(unsigned char*)(buffer + dataToBeCopied),
+				(bufferSize - dataToBeCopied),
+				dataRecieved,
+				ctx->RecvTimeout
+			);
+			// We have to add dataToBeCopied value, as we are completing buffer.
+			*dataRecieved += dataToBeCopied;
+		}
 	}
-	// No error, return number of bytes recieved.
-	return (int)dataRecieved;
+	// There is no data in DataBuffer, so we simply receive new data from VCS.
+	else
+		result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, dataRecieved, ctx->RecvTimeout);
+
+	// Return result.
+	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -607,9 +618,7 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Result buffer.
 	int result = 0;
 	// How much data has been received.
-	int dataReceived = 0;
-	// How much data will be copied to output buffer.
-	int dataToBeCopied = 0;
+	unsigned short dataReceived = 0;
 
 	// Check if we have data buffer already created.
 	if (ctx->DataBuffer == NULL) {
@@ -637,128 +646,22 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 		LOG_PRINTF(("Data left in buffer: %d", ctx->DataInBuffer));
 	}
 
-	// If we have data in DataBuffer, we receive it first.
-	if (ctx->DataInBuffer > 0) {
-		// Calculate how much data we can recieve at once.
-		dataToBeCopied = (ctx->DataInBuffer > bufferSize ? bufferSize : ctx->DataInBuffer);
-		// Copy to output buffer.
-		memcpy(buffer, ctx->DataBuffer, dataToBeCopied);
-		// Decrease DataInBuffer value by dataToBeCopied, as it is already received.
-		ctx->DataInBuffer -= dataToBeCopied;
-		// Shift data in buffer by those we received.
-		memmove(ctx->DataBuffer, (ctx->DataBuffer + dataToBeCopied), ctx->DataInBuffer);
-		// If dataToBeCopied is less than buffer size, we get additional data from VCS.
-		if (dataToBeCopied < bufferSize) {
-			if (ctx->Flags & TRANSFER_CHUNKED)
-				dataReceived = _ReceiveChunkedTransfer((buffer + dataToBeCopied), (bufferSize - dataToBeCopied), ctx);
-			else
-				dataReceived = _ReceivePlainTransfer((buffer + dataToBeCopied), (bufferSize - dataToBeCopied), ctx);
-		}
-	}
-	// There is no data in DataBuffer, so we simply receive new data from VCS.
-	else {
-		if (ctx->Flags & TRANSFER_CHUNKED)
-			dataReceived = _ReceiveChunkedTransfer(buffer, bufferSize, ctx);
-		else
-			dataReceived = _ReceivePlainTransfer(buffer, bufferSize, ctx);
-	}
+	// Here we are sure that response header has been received.
+	// Depending on transfer type (chunked or not) we use specific function.
+	if (ctx->Flags & TRANSFER_CHUNKED)
+		result = _ReceiveChunkedTransfer(buffer, bufferSize, ctx, &dataReceived);
+	else
+		result = _ReceivePlainTransfer(buffer, bufferSize, ctx, &dataReceived);
 
-	LOG_PRINTF(("_HttpRecv() -> Return: %d", (dataToBeCopied + dataReceived)));
-	// And we return dataRecieved plus that that might be in buffer before (result).
-	return (dataToBeCopied + dataReceived);
+	// Check for errors.
+	if (result != 0) {
+		LOG_PRINTF(("_HttpRecv() -> _Receive*Transfer() call returned: %d.", result));
+		return 0;
+	}
+	// There was no error.
+	else {
+		LOG_PRINTF(("_HttpRecv() -> Return: %d", dataReceived));
+		// And we return dataRecieved.
+		return (int)dataReceived;
+	}
 }
-
-///////////////////////////////////////////////////////////////////////////////
-/*int __HttpRecv(char* buffer, int bufferSize, HttpContext* httpCtx) {
-	unsigned short rc_size = 0;
-	int rc_total_size = 0;
-	int header_size = 0;
-	int chunk_len = 0;
-	unsigned char trash_buffer[4] = { 0 };
-	unsigned short i = 0;
-	unsigned char header_buffer[HTTP_MAX_HEADER] = { 0 };
-	int result = 0;
-
-	LOG_PRINTF(("_HttpRecv() -> Start."));
-
-	// pocz¹tek !!! nie mamy jeszcze nic wiêc  najpierw nag³ówek
-	if (httpCtx->rc_parser == 0) {
-		// zbierajmy nag³ówek !!! (powinniœmy zacz¹æ od rozmiaru minimalnego np 100b
-		// i przerwaæ jeœli za du¿o powtórzeñ
-		result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, header_buffer, HTTP_MIN_HEADER, &rc_size, httpCtx->Timeout);
-
-		i += rc_size;
-
-		if (rc_size <= 0)
-			return rc_size;
-
-		while (((header_size = _ReadHttpHeader(httpCtx, header_buffer, HTTP_MAX_HEADER)) == 0) && (i < HTTP_MAX_HEADER)) {
-			result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, header_buffer + i, 1, &rc_size, httpCtx->Timeout);
-			if (rc_size <= 0)
-				return rc_size;
-			++i;
-		}
-	}
-	// Zero rc.
-	rc_size = 0;
-
-	//if (httpCtx->chunked == 1) {
-	if (httpCtx->Flags & HTTP_CHUNKED) {
-		// Jeœli dzielone - na pocz¹tku zawsze bêdzie chunk.
-		while (rc_total_size < bufferSize) {
-
-			if (httpCtx->chunk_tmp_size > bufferSize) {
-				memcpy(buffer + rc_total_size, httpCtx->chunk_tmp_buffer, bufferSize);
-				httpCtx->rc_parser += bufferSize;
-				httpCtx->chunk_size -= bufferSize;
-				rc_total_size += bufferSize;
-				httpCtx->chunk_tmp_size -= bufferSize;
-			}
-
-			// Jesteœmy w trakcie chunk'a i w nim jest wystarczaj¹co du¿o danych.
-			if (httpCtx->chunk_size >= bufferSize - rc_total_size) {
-				result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer + rc_total_size, bufferSize - rc_total_size, &rc_size, httpCtx->Timeout);
-				if (rc_size <= 0)
-					break;
-				httpCtx->chunk_size -= rc_size;
-				httpCtx->rc_parser += rc_size;
-				rc_total_size += rc_size;
-
-				// jeœli zakoñczyliœmy chunk ... sprawdŸmy jaki jest nastêpny!!
-			}
-			// Jesteœmy na etapie chunka'a ale jest w nim ma³o danych.
-			else if (httpCtx->chunk_size > 0) {
-				result = VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer + rc_total_size, httpCtx->chunk_size, &rc_size, httpCtx->Timeout);
-				if (rc_size <= 0)
-					break;
-				httpCtx->chunk_size -= rc_size;
-				httpCtx->rc_parser += rc_size;
-				rc_total_size += rc_size;
-			}
-			// Jesteœmy przed chunk'iem.
-			if (httpCtx->chunk_size == 0) {
-				if (_ReadNextChunkSize(httpCtx, (unsigned char*)buffer, bufferSize - rc_total_size, (int*)&chunk_len) <= 0)
-					break;
-				if (httpCtx->chunk_size == 0) {
-					httpCtx->Flags |= HTTP_ENDING_CHUNK;
-					// Read trash from vsocket.
-					VCS_RecieveRawData(httpCtx->VCSSessionHandle, trash_buffer, sizeof(trash_buffer), &rc_size, httpCtx->Timeout);
-				}
-			}
-			rc_size = 0;
-		}
-
-		LOG_PRINTF((buffer));
-
-		return rc_total_size;
-	}
-	// Poczatek transmisji z nag³ówkiem ale bez chunków.
-	else {
-		VCS_RecieveRawData(httpCtx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, &rc_size, httpCtx->Timeout);
-		if (rc_size > 0)
-			httpCtx->rc_parser += rc_size;
-
-		LOG_PRINTF((buffer));
-		return rc_size;
-	}
-}*/

@@ -33,7 +33,9 @@ extern "C" {
 	///////////////////////////////////////////////////////////////////////////////
 	typedef enum HttpFlags {
 		TRANSFER_CHUNKED = 1,
-		ENDING_CHUNK = 2,
+		// This flag says if we are reading chunk and we know its size.
+		// Or if we have to first find chunk size.
+		READING_CHUNK = 2,
 		HEADER_RECEIVED = 4
 	} HttpFlags;
 
@@ -54,6 +56,10 @@ extern "C" {
 		unsigned int DataBufferSize;
 		// Size of data currently stored in buffer.
 		unsigned int DataInBuffer;
+		// Current chunk size.
+		unsigned int ChunkSize;
+		// Bytes of chunk already read.
+		unsigned int ChunkRead;
 	} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -81,9 +87,9 @@ extern "C" {
 	//	long rc_parser;						/**< rozmiar danych odebranych i przetworzonych przez zewnêtrzny parser protoko³u warstwy aplikacji np http (post-parser)*/
 	//	unsigned char * parser_buffer; 		/**< wskaŸnik na bufor dodatkowy roboczy (post-parser)*/
 	//	unsigned short parser_buffer_size; 	/**<  bierz¹cy rozmiar danych w dodatkowym buforze roboczym (post-parser)*/
-	//	unsigned char chunk_tmp_buffer[PARSER_TMP_BUFFER];		/**< tymczasowy bufor roboczy (post-parser)*/
+	//	unsigned char chunk_tmp_buffer[32];		/**< tymczasowy bufor roboczy (post-parser)*/
 	//	unsigned short chunk_tmp_size;		/** rozmiar bie¿¹cego chunka (post-parser)*/
-	//} HttpContext;
+	//} _csh;
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This method intializes request's header.
