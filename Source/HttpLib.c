@@ -250,6 +250,16 @@ int _HttpConnect(const char* url, unsigned short port, unsigned char ssl, HttpCo
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// This function is used internally for cleaning up connection context state.
+// By state we understand flags and other request-response specific data.
+static void _ResetConnectionContext(HttpContext* ctx) {
+	ctx->ContentLength = 0;
+	ctx->Flags = 0;
+	ctx->DataInBuffer = 0;
+	ctx->ChunkRead = 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 	// Result buffer.
 	int result = 0;
@@ -273,16 +283,6 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 		return result;
 	// Return success.
 	return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// This function is used internally for cleaning up connection context state.
-// By state we understand flags and other request-response specific data.
-static void _ResetConnectionContext(HttpContext* ctx) {
-	ctx->ContentLength = 0;
-	ctx->Flags = 0;
-	ctx->DataInBuffer = 0;
-	ctx->ChunkRead = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
