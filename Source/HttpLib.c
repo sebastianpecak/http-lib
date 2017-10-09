@@ -281,6 +281,7 @@ static void _ResetConnectionContext(HttpContext* ctx) {
 	ctx->ContentLength = 0;
 	ctx->Flags = 0;
 	ctx->DataInBuffer = 0;
+	ctx->ChunkRead = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
