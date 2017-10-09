@@ -36,7 +36,8 @@ extern "C" {
 		// This flag says if we are reading chunk and we know its size.
 		// Or if we have to first find chunk size.
 		READING_CHUNK = 2,
-		HEADER_RECEIVED = 4
+		HEADER_RECEIVED = 4,
+		ENDING_CHUNK_REQUIRED = 8
 	} HttpFlags;
 
 	///////////////////////////////////////////////////////////////////////////////

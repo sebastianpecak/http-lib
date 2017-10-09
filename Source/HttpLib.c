@@ -262,6 +262,7 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 		httpContext->DataBuffer = NULL;
 		httpContext->DataBufferSize = 0;
 	}
+	_ResetConnectionContext(httpContext);
 	// Disconnect from remote host.
 	result = VCS_Disconnect(httpContext->VCSSessionHandle, httpContext->Timeout);
 	if (!force && result != 0)
@@ -286,8 +287,17 @@ static void _ResetConnectionContext(HttpContext* ctx) {
 
 ///////////////////////////////////////////////////////////////////////////////
 int _HttpSend(const void* request, int requestSize, HttpContext* httpContext) {
+	char buffer[64] = { 0 };
+	unsigned short dataRecv = 0;
+
 	LOG_PRINTF(("_HttpSend() -> Start."));
 
+	// If we had chunked transfer we have to check if we recieved ending chunk.
+	if (httpContext->Flags & ENDING_CHUNK_REQUIRED) {
+		do {
+			_ReceiveChunkedTransfer(buffer, sizeof(buffer), httpContext, &dataRecv);
+		} while (httpContext->Flags & ENDING_CHUNK_REQUIRED);
+	}
 	// We have to reset connection context to get rid of trash data.
 	_ResetConnectionContext(httpContext);
 	return VCS_TransmitRawData(httpContext->VCSSessionHandle, request, requestSize, httpContext->Timeout);
@@ -423,15 +433,12 @@ static int _ReadHeader(HttpContext* ctx) {
 				bufferOffset = 2;
 				ctx->DataBuffer[0] = '\r';
 				ctx->DataBuffer[1] = '\n';
-				// Clean rest of buffer.
-				//memset(buffer + 2, 0, bufferSize - 2);
 			}
 			// Otherwise we omit \r\n as it indicates end of property.
 			// We move what left in buffer.
 			else {
 				// Calculate size of data left in buffer.
 				bufferOffset = ctx->DataBufferSize - (lastFullProperty - ctx->DataBuffer) - 2;
-				//memset(buffer + bufferOffset, 0, bufferSize - bufferOffset);
 				memmove(ctx->DataBuffer, lastFullProperty + 2, bufferOffset);
 			}
 		}
@@ -477,6 +484,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 			// Increase DataInBuffer by dataReceived.
 			ctx->DataInBuffer += *dataReceived;
 		}
+		LOG_PRINTF(("'%s'", ctx->DataBuffer));
 		// It could happen that first 2 characters will be \r\n, so we have to omit them.
 		if (ctx->DataBuffer[0] == '\r' && ctx->DataBuffer[1] == '\n') {
 			memmove(ctx->DataBuffer, (ctx->DataBuffer + 2), (ctx->DataInBuffer - 2));
@@ -494,9 +502,15 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
 		// If chunk size is 0, then we received ending chunk.
 		if (ctx->ChunkSize == 0) {
+			// Reset flag that ending chunk is required.
+			ctx->Flags &= ~ENDING_CHUNK_REQUIRED;
 			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Received ending chunk."));
 			*dataReceived = 0;
 			return 0;
+		}
+		else {
+			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Start chunk: %d.", ctx->ChunkSize));
+			ctx->Flags |= ENDING_CHUNK_REQUIRED;
 		}
 		// Set flag that we are receiving chunk.
 		ctx->Flags |= READING_CHUNK;
