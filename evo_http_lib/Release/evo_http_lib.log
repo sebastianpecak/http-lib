@@ -2,40 +2,91 @@
   Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.a /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.o /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.lib /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.axf /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.map /Q
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\*.err /Q
+  
+  Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
   	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlabs -c -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o -D_SHARED_LIB --apcs=/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 492: Warning:  #550-D: variable "result" was set but never used
-    	int result = 0;
-    	    ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 499: Warning:  #177-D: variable "dataLeft" was declared but never referenced
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 298: Warning:  #223-D: function "_ReceiveChunkedTransfer" declared implicitly
+    			_ReceiveChunkedTransfer(buffer, sizeof(buffer), httpContext, &dataRecv);
+    			^
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 387: Warning:  #177-D: variable "dataLeft" was declared but never referenced
     	size_t dataLeft = 0;
     	       ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 559: Warning:  #940-D: missing return statement at end of non-void function "_ReceiveChunkedTransfer"
-    }
-    ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 565: Warning:  #550-D: variable "result" was set but never used
-    	int result = 0;
-    	    ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 599: Warning:  #223-D: function "SVC_WAIT" declared implicitly
-    	SVC_WAIT(1000);
-    	^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 448: Warning:  #177-D: function "_ExtractResponseProperties" was declared but never referenced
-    static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
-                ^
-  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 6 warnings, 0 errors
+  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 2 warnings, 0 errors
   	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -shlpic C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o ..\..\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armar" -r  C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.o C:\eVoAps\ACT2000\1.15.0\\OutPut\RV\Files\Shlib1\Release\act.o ..\..\evo_vcs_lib\Output\Evo\Files\Release\vcslib.o 
+  Creating archive 'C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.a'
   	copy C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Projects\httplib.lid C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lid
           1 file(s) copied.
   	cd C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release
   	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxlib -p httplib
-  VRXLIB: "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" command failed - exit code 1
   Reading library description HTTPLIB.LID
   Generating base code file _HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter _HTTPLIB.S
   Generating interface file HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
-NMAKE : fatal error U1077: 'C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxlib.EXE' : return code '0x1'
-  Stop.
-C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.MakeFile.Targets(41,5): error MSB3073: The command "nmake /f C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Projects\Evo\makefile ProjDir=C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\.. DEBUG=0" exited with code 2.
+  Code Address 70A80040
+  Code Size    16788
+  Data Address 70A85000
+  Data Size    40 (40+0)
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
+  "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\fromelf" --bin HTTPLIB.axf -o HTTPLIB.LIB
+  	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lid /Q
+  	move C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\httplib.lib C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\http.lib
+          1 file(s) moved.
+  	del \\192.168.65.17\dpajak\sign\test2\* /Q
+  	copy C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\http.lib \\192.168.65.17\dpajak\sign\test2\http.lib
+          1 file(s) copied.
+  	psexec \\onir -u mp -p mp D:\shared\dpajak\sign\signfile_evo.cmd test2/http.lib
+  
+  PsExec v2.11 - Execute processes remotely
+  Copyright (C) 2001-2014 Mark Russinovich
+  Sysinternals - www.sysinternals.com
+  
+  
+  Connecting to onir...
+  
+  
+  Starting PSEXESVC service on onir...
+  
+  
+  Connecting with PsExec service on onir...
+  
+  
+  Starting D:\shared\dpajak\sign\signfile_evo.cmd on onir...
+  
+  
+  
+  D:\shared\dpajak\sign\signfile_evo.cmd exited on onir with error code 0.
+  	psexec \\onir -u mp -p mp "C:\Program Files\Verifone\fst\filesignature.exe"  D:\shared\dpajak\sign\test2\http.lib.fst
+  
+  PsExec v2.11 - Execute processes remotely
+  Copyright (C) 2001-2014 Mark Russinovich
+  Sysinternals - www.sysinternals.com
+  
+  Signing File D:\shared\dpajak\sign\test2/http.lib... OK!
+  Connecting to onir...
+  
+  
+  Starting PSEXESVC service on onir...
+  
+  
+  Connecting with PsExec service on onir...
+  
+  
+  Starting C:\Program Files\Verifone\fst\filesignature.exe on onir...
+  
+  
+  
+  C:\Program Files\Verifone\fst\filesignature.exe exited on onir with error code 0.
+  	copy \\192.168.65.17\dpajak\sign\test2\http.lib.p7s C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Release\Sign\Flash\http.lib.p7s
+          1 file(s) copied.

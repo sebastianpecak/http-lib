@@ -323,6 +323,7 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	hexZeroString[hexStringLength] = '\0';
 	// Copy string.
 	strncpy(hexZeroString, hexString, hexStringLength);
+	LOG_PRINTF(("Chunk size: %s", hexZeroString));
 	// Convert value.
 	result = strtol(hexZeroString, NULL, 16);
 	// Free buffer.
@@ -405,7 +406,7 @@ static int _ReadHeader(HttpContext* ctx) {
 		headerEnd = strstr(ctx->DataBuffer, HTTP_HEADER_TERMINATOR);
 		// If we received complete http header.
 		if (headerEnd != NULL) {
-			LOG_PRINTF(("Found terminator."));
+			LOG_PRINTF(("_ReadHeader() -> Found header terminator."));
 			// We set complete header flag.
 			ctx->Flags |= HEADER_RECEIVED;
 			// We calculate how much data is body.
@@ -413,7 +414,7 @@ static int _ReadHeader(HttpContext* ctx) {
 			// Now we shift data that belongs to body at buffer's beginning.
 			memmove(ctx->DataBuffer, (headerEnd + 4), bufferOffset);
 			// Here we gonna leave loop.
-			LOG_PRINTF(("Leaving loop."));
+			//LOG_PRINTF(("Leaving loop."));
 		}
 		// We have just another header part.
 		else {
@@ -461,7 +462,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 	// Size of data received by VCS_RecieveRawData.
 	*dataReceived = 0;
 
-	LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
+	//LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
 
 	// Check if we are reading chunk right now.
 	// If not we have to find chunk size first.
@@ -484,7 +485,6 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 			// Increase DataInBuffer by dataReceived.
 			ctx->DataInBuffer += *dataReceived;
 		}
-		LOG_PRINTF(("'%s'", ctx->DataBuffer));
 		// It could happen that first 2 characters will be \r\n, so we have to omit them.
 		if (ctx->DataBuffer[0] == '\r' && ctx->DataBuffer[1] == '\n') {
 			memmove(ctx->DataBuffer, (ctx->DataBuffer + 2), (ctx->DataInBuffer - 2));
@@ -524,6 +524,8 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 	// If it is more than we can store in output buffer then we limit use bufferSize as limit.
 	toRecv = (toRecv > bufferSize ? bufferSize : toRecv);
 
+	LOG_PRINTF(("ToRecv: %d", toRecv));
+
 	// If we have anything in buffer we have to receive it first.
 	if (ctx->DataInBuffer > toRecv) {
 		// We receive toRecv.
@@ -560,11 +562,6 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		dataReceived,
 		ctx->RecvTimeout
 	);
-	// Check for errors.
-	//if (result != 0) {
-	//	LOG_PRINTF(("_ReceiveChunkedTransfer() -> VCS_RecieveRawData() call returned: %d.", result));
-	//	return -1;
-	//}
 	// Increase dataRecvTotal by dataReceived (in current call).
 	dataRecvTotal += *dataReceived;
 	// Increase ChunkRead as global state variable.
@@ -572,6 +569,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 
 	// Check if we completly read current chunk.
 	if (ctx->ChunkRead == ctx->ChunkSize) {
+		LOG_PRINTF(("Chunk read completely."));
 		// Reset receiving flag.
 		ctx->Flags &= ~READING_CHUNK;
 		// Reset chunk read.
@@ -592,7 +590,7 @@ static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx,
 	int result = 0;
 	int dataToBeCopied = 0;
 
-	LOG_PRINTF(("_ReceivePlainTransfer() ->"));
+	//LOG_PRINTF(("_ReceivePlainTransfer() ->"));
 
 	// If we have data in DataBuffer, we receive it first.
 	if (ctx->DataInBuffer > 0) {
@@ -658,7 +656,7 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 			// For safety we return 0, as no data were received.
 			return 0;
 		}
-		LOG_PRINTF(("Data left in buffer: %d", ctx->DataInBuffer));
+		LOG_PRINTF(("_HttpRecv() -> After receiving header we have %d bytes left in buffer.", ctx->DataInBuffer));
 	}
 
 	// Here we are sure that response header has been received.

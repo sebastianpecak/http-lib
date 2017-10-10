@@ -3,17 +3,11 @@
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.a /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.a
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.o /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.o
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.lib /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.lib
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.axf /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.axf
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.map /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.map
   	del C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\*.err /Q
-  Could Not Find C:\Users\specak\Documents\gitlab\evo_http_lib\Output\Evo\Files\Debug\*.err
   
   Microsoft (R) Program Maintenance Utility Version 14.00.24210.0
   Copyright (C) Microsoft Corporation.  All rights reserved.
@@ -23,7 +17,7 @@
   "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 298: Warning:  #223-D: function "_ReceiveChunkedTransfer" declared implicitly
     			_ReceiveChunkedTransfer(buffer, sizeof(buffer), httpContext, &dataRecv);
     			^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 387: Warning:  #177-D: variable "dataLeft" was declared but never referenced
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 388: Warning:  #177-D: variable "dataLeft" was declared but never referenced
     	size_t dataLeft = 0;
     	       ^
   C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 2 warnings, 0 errors
@@ -41,7 +35,7 @@
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   Code Address 70A80040
-  Code Size    18540
+  Code Size    18564
   Data Address 70A85000
   Data Size    40 (40+0)
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
