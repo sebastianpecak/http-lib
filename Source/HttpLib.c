@@ -202,8 +202,8 @@ int _HttpSetRequestBody(const char* body, char* request, int requestSize) {
 				"\r\n%s",
 				body
 			);
-			// Return success.
-			return 0;
+			// Return request lenght.
+			return strlen(request);
 		}
 		else
 			return -2;
@@ -461,8 +461,6 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 	unsigned int dataRecvTotal = 0;
 	// Size of data received by VCS_RecieveRawData.
 	*dataReceived = 0;
-
-	//LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
 
 	// Check if we are reading chunk right now.
 	// If not we have to find chunk size first.

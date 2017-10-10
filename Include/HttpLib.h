@@ -81,7 +81,8 @@ extern "C" {
 	// Arguments:
 	// 1) Request buffer.
 	// 2) Request buffer size.
-	// Returns: Non-zero value on error.
+	// Returns:
+	// < 0 : Error code.
 	extern int _HttpCompleteRequest(char*, int);
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,9 @@ extern "C" {
 	// 1) Body content (null-terminated string).
 	// 2) Request buffer.
 	// 3) Request buffer size.
-	// Returns: Non-zero value on error.
+	// Returns: 
+	// >= 0 : Request size.
+	// < 0 : On error.
 	extern int _HttpSetRequestBody(const char*, char*, int);
 	// This function sets body to raw data (can cantain zeroes).
 	// Returns request size (in bytes). Important when sending binary data.
