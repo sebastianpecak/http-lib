@@ -413,8 +413,6 @@ static int _ReadHeader(HttpContext* ctx) {
 			bufferOffset = (dataReceived + bufferOffset - (unsigned short)(headerEnd - ctx->DataBuffer)) - 4;
 			// Now we shift data that belongs to body at buffer's beginning.
 			memmove(ctx->DataBuffer, (headerEnd + 4), bufferOffset);
-			// Here we gonna leave loop.
-			//LOG_PRINTF(("Leaving loop."));
 		}
 		// We have just another header part.
 		else {
@@ -587,8 +585,6 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataRecieved) {
 	int result = 0;
 	int dataToBeCopied = 0;
-
-	//LOG_PRINTF(("_ReceivePlainTransfer() ->"));
 
 	// If we have data in DataBuffer, we receive it first.
 	if (ctx->DataInBuffer > 0) {
