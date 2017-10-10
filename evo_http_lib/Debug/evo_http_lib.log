@@ -35,7 +35,7 @@
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   Code Address 70A80040
-  Code Size    18564
+  Code Size    18612
   Data Address 70A85000
   Data Size    40 (40+0)
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 

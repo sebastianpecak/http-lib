@@ -496,6 +496,10 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		}
 		// Save new chunk size.
 		ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
+		// Throw out chunk size from DataBuffer.
+		ctx->DataInBuffer = (ctx->DataInBuffer - (chunkTerminator - ctx->DataBuffer) - 2);
+		memmove(ctx->DataBuffer, (chunkTerminator + 2), ctx->DataInBuffer);
+
 		// If chunk size is 0, then we received ending chunk.
 		if (ctx->ChunkSize == 0) {
 			// Reset flag that ending chunk is required.
@@ -506,13 +510,9 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		}
 		else {
 			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Start chunk: %d.", ctx->ChunkSize));
-			ctx->Flags |= ENDING_CHUNK_REQUIRED;
+			// Set flags.
+			ctx->Flags |= ENDING_CHUNK_REQUIRED | READING_CHUNK;
 		}
-		// Set flag that we are receiving chunk.
-		ctx->Flags |= READING_CHUNK;
-		// Throw out chunk size from DataBuffer.
-		ctx->DataInBuffer = (ctx->DataInBuffer - (chunkTerminator - ctx->DataBuffer) - 2);
-		memmove(ctx->DataBuffer, (chunkTerminator + 2), ctx->DataInBuffer);
 	}
 
 	// Calculate how much data we should receive in this call (what left for current chunk).
@@ -565,7 +565,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 
 	// Check if we completly read current chunk.
 	if (ctx->ChunkRead == ctx->ChunkSize) {
-		LOG_PRINTF(("Chunk read completely."));
+		LOG_PRINTF(("_ReceiveChunkedTransfer() -> Chunk of size: %d received completely.", ctx->ChunkSize));
 		// Reset receiving flag.
 		ctx->Flags &= ~READING_CHUNK;
 		// Reset chunk read.
