@@ -147,6 +147,12 @@ extern "C" {
 	///////////////////////////////////////////////////////////////////////////////
 	extern int _HttpRecv(char*, int, HttpContext*);
 
+	///////////////////////////////////////////////////////////////////////////////
+	// This function checks underlying socket status and returns:
+	// 0 : Not connected.
+	// Anything other: Connected.
+	extern int _HttpIsConnected(const HttpContext*);
+
 #ifdef __cplusplus
 }
 #endif	// __cplusplus
@@ -217,5 +223,11 @@ extern "C" {
 #undef HttpCompleteRequest
 #endif
 #define HttpCompleteRequest _HttpCompleteRequest
+
+///////////////////////////////////////////////////////////////////////////////
+#ifdef HttpIsConnected
+#undef HttpIsConnected
+#endif
+#define HttpIsConnected _HttpIsConnected
 
 #endif	// HTTPLIB_H

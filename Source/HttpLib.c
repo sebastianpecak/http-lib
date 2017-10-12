@@ -672,3 +672,21 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 		return (int)dataReceived;
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+int _HttpIsConnected(const HttpContext* ctx) {
+	unsigned short socketStatus = 0;
+	int result = 0;
+
+	// Check if session handle is correct.
+	if (ctx->VCSSessionHandle >= 0 && ctx->VCSSessionHandle < 15) {
+		result = VCS_GetSocketStatus(ctx->VCSSessionHandle, &socketStatus, ctx->Timeout);
+		// Check for error.
+		if (result != 0)
+			return 0;
+		// If there was no error, we return actual socket status.
+		return (int)socketStatus;
+	}
+	// Invalid handle.
+	return 0;
+}

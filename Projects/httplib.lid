@@ -9,3 +9,4 @@ HTTPLIB id=27 addr=70a80000 ver=1.0 thumb
 8 _HttpSetRequestBodyRaw
 9 _HttpCompleteRequest
 10 _HttpGetProperty
+11 _HttpIsConnected
