@@ -3,6 +3,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // Library defines.
+// This value is used for buffering response header data.
 #define HTTP_BUFFER_SIZE				256
 #define HTTP_HEADER_TERMINATOR			"\r\n\r\n"
 
@@ -81,8 +82,7 @@ extern "C" {
 	// Arguments:
 	// 1) Request buffer.
 	// 2) Request buffer size.
-	// Returns:
-	// < 0 : Error code.
+	// Returns: request length.
 	extern int _HttpCompleteRequest(char*, int);
 
 	///////////////////////////////////////////////////////////////////////////////

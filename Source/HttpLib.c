@@ -69,30 +69,19 @@ int _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, c
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpCompleteRequest(char* request, int requestSize) {
-	// Request ContentLength.
-	int length = 0;
-
+int _HttpCompleteRequest(char* request, int requestBufferSize) {
 	LOG_PRINTF(("_HttpCompleteRequest() -> Start."));
 
-	if (request && requestSize > 0) {
-		// Search for \r\n\r\n.
-		if (strstr(request, "\r\n\r\n") == NULL) {
-			// Check if last 2 characters are \r\n. If yes append 1 more pair.
-			length = strlen(request);
-			if (request[length - 2] == '\r' && request[length - 1] == '\n') {
-				// Check if we can append.
-				if (length + 2 <= requestSize)
-					strcpy((request + length), "\r\n");
-				else
-					return -2;
-			}
-		}
-		// Found. Probably header is terminated by 2xCRLF.
-		return 0;
+	if (request && requestBufferSize > 0) {
+		// Seek for header terminator.
+		if (strstr(request, HTTP_HEADER_TERMINATOR) == NULL)
+			// Append terminator.
+			strcat(request, HTTP_HEADER_TERMINATOR);
+		// Return request length.
+		return strlen(request);
 	}
-	else
-		return -1;
+	// Invalid parameters, return 0 as request length.
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -323,7 +312,6 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	hexZeroString[hexStringLength] = '\0';
 	// Copy string.
 	strncpy(hexZeroString, hexString, hexStringLength);
-	LOG_PRINTF(("Chunk size: %s", hexZeroString));
 	// Convert value.
 	result = strtol(hexZeroString, NULL, 16);
 	// Free buffer.
@@ -402,7 +390,6 @@ static int _ReadHeader(HttpContext* ctx) {
 		// Try to extract all required response's properties.
 		_ExtractResponseProperties(ctx->DataBuffer, ctx);
 		// Check if we recieved complete header (\r\n\r\n).
-		LOG_PRINTF(("'%s'", ctx->DataBuffer));
 		headerEnd = strstr(ctx->DataBuffer, HTTP_HEADER_TERMINATOR);
 		// If we received complete http header.
 		if (headerEnd != NULL) {
