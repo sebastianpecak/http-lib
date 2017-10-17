@@ -14,13 +14,13 @@
   
   	C:\eVoAps\SDK\1.2.0\VRXSDK\bin\vrxcc -p -v -g -shlabs -c -DLOGSYS_FLAG -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armcc" -Ono_memcpy --library_interface=aeabi_clib --no_unaligned_access -Ono_tree_sequencing --thumb -c --cpu ARM1136J-S --bi -J"C:\eVoAps\SDK\1.2.0\VRXSDK\include" -g -o C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Output\Evo\Files\Debug\httplib.o -D_SHARED_LIB --apcs=/inter -IC:\eVoAps\SDK\1.2.0\VRXSDK\Include -IC:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Include -I..\..\evo_vcs_lib\Include -IC:\eVoAps\ACT2000\1.15.0\\Include -DLOGSYS_FLAG C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 287: Warning:  #223-D: function "_ReceiveChunkedTransfer" declared implicitly
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 317: Warning:  #223-D: function "_ReceiveChunkedTransfer" declared implicitly
     			_ReceiveChunkedTransfer(buffer, sizeof(buffer), httpContext, &dataRecv);
     			^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 376: Warning:  #177-D: variable "dataLeft" was declared but never referenced
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 406: Warning:  #177-D: variable "dataLeft" was declared but never referenced
     	size_t dataLeft = 0;
     	       ^
-  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 669: Warning:  #186-D: pointless comparison of unsigned integer with zero
+  "C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c", line 699: Warning:  #186-D: pointless comparison of unsigned integer with zero
     	if (ctx->VCSSessionHandle >= 0 && ctx->VCSSessionHandle < 15) {
     	                          ^
   C:\Users\specak\Documents\gitlab\evo_http_lib\evo_http_lib\\..\Source\httplib.c: 3 warnings, 0 errors
@@ -38,7 +38,7 @@
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armasm" --cpu ARM1136J-S --bi --apcs /inter HTTPLIB.S
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 
   Code Address 70A80040
-  Code Size    18684
+  Code Size    18724
   Data Address 70A85000
   Data Size    40 (40+0)
   "C:\Program Files\ARM\RVCT\Programs\4.0\436\multi1\win_32-pentium\armlink" -o HTTPLIB.axf --scatter _liblnk_.sct --keep _verix_header --keep *(.dummy_pdt)  --entry _shlgo_abs --be32 --map --symbols --info veneers --list HTTPLIB.map --verbose --errors HTTPLIB.err _HTTPLIB.o HTTPLIB.a "C:\eVoAps\SDK\1.2.0\VRXSDK\lib\verix11.lib" 

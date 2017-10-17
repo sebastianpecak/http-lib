@@ -70,9 +70,39 @@ int _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, c
 
 ///////////////////////////////////////////////////////////////////////////////
 int _HttpCompleteRequest(char* request, int requestBufferSize) {
+	size_t length = 0;
+
 	LOG_PRINTF(("_HttpCompleteRequest() -> Start."));
 
 	if (request && requestBufferSize > 0) {
+		// Search for \r\n\r\n.
+		if (strstr(request, "\r\n\r\n") == NULL) {
+			// Check if last 2 characters are \r\n. If yes append 1 more pair.
+			length = strlen(request);
+			if (request[length - 2] == '\r' && request[length - 1] == '\n') {
+				// Check if we can append.
+				if (length + 2 <= requestBufferSize) {
+					strcpy((request + length), "\r\n");
+					return length + 2;
+				}
+			}
+			// If not check if we can append 2x\r\n.
+			else {
+				if ((length + 4) <= requestBufferSize) {
+					strcpy((request + length), "\r\n\r\n");
+					return length + 4;
+				}
+			}
+		}
+		// Found. Probably header is terminated by 2xCRLF.
+		return 0;
+	}
+	else
+		return 0;
+
+
+
+	/*if (request && requestBufferSize > 0) {
 		// Seek for header terminator.
 		if (strstr(request, HTTP_HEADER_TERMINATOR) == NULL)
 			// Append terminator.
@@ -81,7 +111,7 @@ int _HttpCompleteRequest(char* request, int requestBufferSize) {
 		return strlen(request);
 	}
 	// Invalid parameters, return 0 as request length.
-	return 0;
+	return 0;*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
