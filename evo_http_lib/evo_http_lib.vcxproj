@@ -72,6 +72,7 @@ nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0
   <ItemGroup>
     <None Include="..\Projects\Evo\makefile" />
     <None Include="..\Projects\httplib.lid" />
+    <None Include="..\Projects\version" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

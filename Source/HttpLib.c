@@ -6,6 +6,12 @@
 #include <logsys.h>
 
 ///////////////////////////////////////////////////////////////////////////////
+// Allocator used in code (default).
+static Allocator_t MemAlloc = malloc;
+// Deallocator used in code (default).
+static Deallocator_t MemFree = free;
+
+///////////////////////////////////////////////////////////////////////////////
 static const char* MethodsText[] = {
 	"GET",
 	"HEAD",
@@ -287,7 +293,8 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 
 	// Drop data buffer.
 	if (httpContext->DataBuffer && httpContext->DataBufferSize > 0) {
-		free(httpContext->DataBuffer);
+		//free(httpContext->DataBuffer);
+		MemFree(httpContext->DataBuffer);
 		httpContext->DataBuffer = NULL;
 		httpContext->DataBufferSize = 0;
 	}
@@ -333,7 +340,8 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	int result = 0;
 
 	// Allocate buffer for copy of hexString (null-terminated).
-	hexZeroString = malloc(hexStringLength + 1);
+	//hexZeroString = malloc(hexStringLength + 1);
+	hexZeroString = MemAlloc(hexStringLength + 1);
 	// Check for errors.
 	if (hexZeroString == NULL)
 		// Return error.
@@ -345,7 +353,8 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	// Convert value.
 	result = strtol(hexZeroString, NULL, 16);
 	// Free buffer.
-	free(hexZeroString);
+	//free(hexZeroString);
+	MemFree(hexZeroString);
 	return result;
 }
 
@@ -647,7 +656,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Check if we have data buffer already created.
 	if (ctx->DataBuffer == NULL) {
 		// Create buffer.
-		ctx->DataBuffer = malloc(HTTP_BUFFER_SIZE);
+		//ctx->DataBuffer = malloc(HTTP_BUFFER_SIZE);
+		ctx->DataBuffer = MemAlloc(HTTP_BUFFER_SIZE);
 		// Check for error.
 		if (ctx->DataBuffer == NULL) {
 			LOG_PRINTF(("_HttpRecv() -> Could not create DataBuffer of size: %d", HTTP_BUFFER_SIZE));
@@ -706,4 +716,16 @@ int _HttpIsConnected(const HttpContext* ctx) {
 	}
 	// Invalid handle.
 	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int _HttpSetMemoryInterface(Allocator_t alloc, Deallocator_t free) {
+	// Both arguments must be valid pointers.
+	if (alloc && free) {
+		MemAlloc = alloc;
+		MemFree = free;
+		return 0;
+	}
+	// Invalid arguments, return error.
+	return -1;
 }

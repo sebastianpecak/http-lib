@@ -5,6 +5,11 @@
 !ifdef DEBUG
 
 ##----------------------------------------------------------------
+## Version file.
+##----------------------------------------------------------------
+!include $(ProjDir)\Projects\version
+
+##----------------------------------------------------------------
 ## Project directoires.
 ##----------------------------------------------------------------
 !if $(DEBUG) == 0
@@ -83,7 +88,7 @@ pseudoOut : $(SignDir)\$(LibNameOut).lib.p7s
 ##----------------------------------------------------------------
 ## Sign shared library.
 ##----------------------------------------------------------------
-$(SignDir)\$(LibNameOut).lib.p7s : $(OutDir)\$(LibNameOut).lib
+$(SignDir)\$(LibNameOut).lib.p7s : OutputConfig
 # Empty remote directory.
 	del $(RemoteDir)\test2\* /Q
 # Copy output file.
@@ -94,6 +99,13 @@ $(SignDir)\$(LibNameOut).lib.p7s : $(OutDir)\$(LibNameOut).lib
 	psexec $(RemoteHost) -u $(RemoteUser) -p $(RemotePwd) $(FileSignatureTool)  $(DirOnRemote)\test2\$(LibNameOut).lib.fst
 # Download file signature.
 	copy $(RemoteDir)\test2\$(LibNameOut).lib.p7s $(SignDir)\$(LibNameOut).lib.p7s
+
+##----------------------------------------------------------------
+## Output configuration.
+##----------------------------------------------------------------
+OutputConfig : $(OutDir)\$(LibNameOut).lib
+# Set library version.
+	$(EVOSDK)\bin\vrxhdr -v $(VER) $**
 
 ##----------------------------------------------------------------
 ## Create shared library out of httplib archive.

@@ -1,6 +1,9 @@
 #ifndef HTTPLIB_H
 #define HTTPLIB_H
 
+// For size_t.
+#include <string.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Library defines.
 // This value is used for buffering response header data.
@@ -14,6 +17,11 @@ extern "C" {
 	/*
 		HttpLib delivers tools for HTTP communication.
 	*/
+
+	///////////////////////////////////////////////////////////////////////////////
+	// Library memory allocator and deallocator type.
+	typedef void*(*Allocator_t)(size_t);
+	typedef void(*Deallocator_t)(void*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Enumeration of HTTP versions.
@@ -152,6 +160,15 @@ extern "C" {
 	// 0 : Not connected.
 	// Anything other: Connected.
 	extern int _HttpIsConnected(const HttpContext*);
+
+	///////////////////////////////////////////////////////////////////////////////
+	// This function is used to set library memory managment functions.
+	// Memory allocation and free.
+	// Arguments:
+	// Allocator_t - valid pointer to function allocating memory.
+	// Deallocator_t - valid pointer to function freeing allocated memory.
+	// Returns: Non-zero value on error.
+	extern int _HttpSetMemoryInterface(Allocator_t, Deallocator_t);
 
 #ifdef __cplusplus
 }
