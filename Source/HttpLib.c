@@ -105,19 +105,6 @@ int _HttpCompleteRequest(char* request, int requestBufferSize) {
 	}
 	else
 		return 0;
-
-
-
-	/*if (request && requestBufferSize > 0) {
-		// Seek for header terminator.
-		if (strstr(request, HTTP_HEADER_TERMINATOR) == NULL)
-			// Append terminator.
-			strcat(request, HTTP_HEADER_TERMINATOR);
-		// Return request length.
-		return strlen(request);
-	}
-	// Invalid parameters, return 0 as request length.
-	return 0;*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -412,7 +399,7 @@ static int _ReadHeader(HttpContext* ctx) {
 	// Data following that point will be moved to buffer's beginning.
 	char* lastFullProperty = NULL;
 	// Data left in buffer.
-	size_t dataLeft = 0;
+	//size_t dataLeft = 0;
 	// Buffer offset (used when some data left in buffer).
 	size_t bufferOffset = 0;
 
@@ -706,7 +693,8 @@ int _HttpIsConnected(const HttpContext* ctx) {
 	int result = 0;
 
 	// Check if session handle is correct.
-	if (ctx->VCSSessionHandle >= 0 && ctx->VCSSessionHandle < 15) {
+	//if (ctx->VCSSessionHandle >= 0 && ctx->VCSSessionHandle < 15) {
+	if (ctx->VCSSessionHandle < 15) {
 		result = VCS_GetSocketStatus(ctx->VCSSessionHandle, &socketStatus, ctx->Timeout);
 		// Check for error.
 		if (result != 0)
