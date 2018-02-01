@@ -280,7 +280,6 @@ int _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
 
 	// Drop data buffer.
 	if (httpContext->DataBuffer && httpContext->DataBufferSize > 0) {
-		//free(httpContext->DataBuffer);
 		MemFree(httpContext->DataBuffer);
 		httpContext->DataBuffer = NULL;
 		httpContext->DataBufferSize = 0;
@@ -327,7 +326,6 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	int result = 0;
 
 	// Allocate buffer for copy of hexString (null-terminated).
-	//hexZeroString = malloc(hexStringLength + 1);
 	hexZeroString = MemAlloc(hexStringLength + 1);
 	// Check for errors.
 	if (hexZeroString == NULL)
@@ -340,7 +338,6 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
 	// Convert value.
 	result = strtol(hexZeroString, NULL, 16);
 	// Free buffer.
-	//free(hexZeroString);
 	MemFree(hexZeroString);
 	return result;
 }
@@ -360,9 +357,10 @@ static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
 		ctx->ContentLength = (size_t)atoi(propertyValue);
 	// Get Transfer-Encoding.
 	result = _HttpGetProperty("Transfer-Encoding", propertyValue, sizeof(propertyValue), buffer);
-	// If we have chunked transfer, set flag.
+	// If we have chunked transfer, set all flags.
 	if (strstr(propertyValue, "chunked") != NULL)
-		ctx->Flags |= TRANSFER_CHUNKED;
+		//ctx->Flags |= TRANSFER_CHUNKED;
+		ctx->Flags |= TRANSFER_CHUNKED | ENDING_CHUNK_REQUIRED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,8 +396,6 @@ static int _ReadHeader(HttpContext* ctx) {
 	// Pointer to last full property that has been read.
 	// Data following that point will be moved to buffer's beginning.
 	char* lastFullProperty = NULL;
-	// Data left in buffer.
-	//size_t dataLeft = 0;
 	// Buffer offset (used when some data left in buffer).
 	size_t bufferOffset = 0;
 
@@ -524,7 +520,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		else {
 			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Start chunk: %d.", ctx->ChunkSize));
 			// Set flags.
-			ctx->Flags |= ENDING_CHUNK_REQUIRED | READING_CHUNK;
+			ctx->Flags |= /*ENDING_CHUNK_REQUIRED |*/ READING_CHUNK;
 		}
 	}
 
@@ -643,7 +639,6 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Check if we have data buffer already created.
 	if (ctx->DataBuffer == NULL) {
 		// Create buffer.
-		//ctx->DataBuffer = malloc(HTTP_BUFFER_SIZE);
 		ctx->DataBuffer = MemAlloc(HTTP_BUFFER_SIZE);
 		// Check for error.
 		if (ctx->DataBuffer == NULL) {
@@ -669,8 +664,13 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 
 	// Here we are sure that response header has been received.
 	// Depending on transfer type (chunked or not) we use specific function.
-	if (ctx->Flags & TRANSFER_CHUNKED)
-		result = _ReceiveChunkedTransfer(buffer, bufferSize, ctx, &dataReceived);
+	if (ctx->Flags & TRANSFER_CHUNKED) {
+		// Break immediately if ending chunk was recived.
+		if (!(ctx->Flags & ENDING_CHUNK_REQUIRED))
+			result = 0;
+		else
+			result = _ReceiveChunkedTransfer(buffer, bufferSize, ctx, &dataReceived);
+	}
 	else
 		result = _ReceivePlainTransfer(buffer, bufferSize, ctx, &dataReceived);
 
@@ -693,7 +693,6 @@ int _HttpIsConnected(const HttpContext* ctx) {
 	int result = 0;
 
 	// Check if session handle is correct.
-	//if (ctx->VCSSessionHandle >= 0 && ctx->VCSSessionHandle < 15) {
 	if (ctx->VCSSessionHandle < 15) {
 		result = VCS_GetSocketStatus(ctx->VCSSessionHandle, &socketStatus, ctx->Timeout);
 		// Check for error.
