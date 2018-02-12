@@ -70,6 +70,8 @@ extern "C" {
 		unsigned int ChunkSize;
 		// Bytes of chunk already read.
 		unsigned int ChunkRead;
+		// Socket connect timeout (in miliseconds).
+		unsigned short ConnectTimeout;
 	} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////

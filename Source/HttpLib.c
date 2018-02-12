@@ -253,7 +253,7 @@ int _HttpConnect(const char* url, unsigned short port, unsigned char ssl, HttpCo
 	if (result != 0)
 		return result;
 	// Connect to remote host.
-	result = VCS_Connect(httpContext->VCSSessionHandle, url, port, ssl, httpContext->Timeout);
+	result = VCS_Connect(httpContext->VCSSessionHandle, url, port, ssl, httpContext->ConnectTimeout);
 	// Check for error.
 	if (result != 0)
 		return result;
