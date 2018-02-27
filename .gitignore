@@ -12,3 +12,7 @@
 *.p7s
 *.lib
 *.tmp
+*.log
+.vs/*.*
+*.user
+*.suo
