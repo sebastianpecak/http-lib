@@ -9,6 +9,7 @@
 // This value is used for buffering response header data.
 #define HTTP_BUFFER_SIZE				256
 #define HTTP_HEADER_TERMINATOR			"\r\n\r\n"
+#define HTTP_PROPERTY_DELIMITER         "\r\n"
 
 #ifdef __cplusplus
 extern "C" {

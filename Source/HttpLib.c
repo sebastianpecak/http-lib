@@ -380,12 +380,111 @@ static const char* _FindLast(const char* source, const char* value) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+static void _HandleEndOfHttpHeader(const char* headerEnd, HttpContext* ctx) {
+    size_t offset = 0;
+
+    // We set complete header flag.
+    ctx->Flags |= HEADER_RECEIVED;
+    // We calculate how much data is body.
+    offset = (headerEnd + 4/*\r\n\r\n*/ - ctx->DataBuffer);
+    // Update how much data left in buffer.
+    ctx->DataInBuffer -= offset;
+    // Now we shift data that belongs to body at buffer's beginning.
+    memmove(ctx->DataBuffer, (headerEnd + 4), ctx->DataInBuffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+static void _HandleLastCompleteProperty(const char* lastFullProperty, HttpContext* ctx) {
+    size_t offset = 0;
+
+    // Last full property offset.
+    offset = lastFullProperty - ctx->DataBuffer;
+    // Update how much data left in buffer.
+    ctx->DataInBuffer -= offset;
+    // Shift incomplete property at the beginning.
+    memmove(ctx->DataBuffer, lastFullProperty, ctx->DataInBuffer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// This function is responsible for receiving complete response header.
+// It parses properties and modifies HttpContext configuration.
+static int _ReadHttpHeader(HttpContext* ctx) {
+    int result = 0;
+    size_t bufferFreeSpace = ctx->DataBufferSize;
+    unsigned short dataReceived = 0;
+    char* headerEnd = NULL;
+    const char* lastCompleteProperty = NULL;
+    size_t offset = 0;
+
+    LOG_PRINTF(("_ReadHttpHeader() ->"));
+
+    do {
+        // Receive data from server.
+        result = VCS_RecieveRawData(
+            ctx->VCSSessionHandle,
+            (unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
+            // Receive bufferSize - 1 to provide slot for \0.
+            (ctx->DataBufferSize - ctx->DataInBuffer - 1),
+            &dataReceived,
+            ctx->RecvTimeout
+        );
+
+        LOG_PRINTF(("\t@@ dataReceived: %d", dataReceived));
+        // Check if we received any data.
+        if (dataReceived > 0) {
+            // Update data amount in buffer.
+            ctx->DataInBuffer += dataReceived;
+            // Set string-zero terminator.
+            ctx->DataBuffer[ctx->DataInBuffer] = 0;
+
+            LOG_PRINTF(("\t@@ ctx->DataInBuffer: '%s'", ctx->DataBuffer));
+
+            // Try to extract all required response's properties.
+            _ExtractResponseProperties(ctx->DataBuffer, ctx);
+            // Search for HTTP header terminator.
+            headerEnd = strstr(ctx->DataBuffer, HTTP_HEADER_TERMINATOR);
+            // If we received complete http header.
+            if (headerEnd != NULL) {
+                LOG_PRINTF(("\tFound header terminator."));
+                _HandleEndOfHttpHeader(headerEnd, ctx);
+            }
+            // We received another header part.
+            else {
+                // Try to locate last complete property in this part.
+                // Next property (which is not complete) will be moved to buffer's beginning.
+                lastCompleteProperty = _FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
+                // If we found last complete property, we shift remaining data to the buffer's beginning.
+                if (lastCompleteProperty) {
+                    LOG_PRINTF(("\tlastCompleteProperty: '%s'", lastCompleteProperty));
+                    _HandleLastCompleteProperty(lastCompleteProperty, ctx);
+                }
+                // If we could not locate last complete property that means out buffer is too small.
+                else {
+                    LOG_PRINTF(("\tBuffer too small to receive response header. Buffer does not contain header terminator '\\r\\n\\r\\n' neither 1 complete header property."));
+                    // Buffer too small.
+                    return -1;
+                }
+            }
+        }
+        // Transmission error.
+        else {
+            LOG_PRINTF(("\tNo data read from TCP socket. Result: %d.", result));
+            // Header could not be read.
+            return -1;
+        }
+    } while (!(ctx->Flags & HEADER_RECEIVED));
+
+    // Return success.
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // This function is responsible for receiving complete response header.
 // It parses properties and modifies HttpContext configuration.
 // Returns:
 // >= 0 : Data length left in buffer (part of response body).
 // < 0 : Error value.
-static int _ReadHeader(HttpContext* ctx) {
+/*static int _ReadHeader(HttpContext* ctx) {
 	// Size of data received from VCS.
 	unsigned short dataReceived = 0;
 	// Status buffer.
@@ -410,17 +509,20 @@ static int _ReadHeader(HttpContext* ctx) {
             &dataReceived,
             ctx->RecvTimeout
         );
+        LOG_PRINTF(("\t@@ dataReceived: %d", dataReceived));
 		// Check if we received any data (expected behaviour).
 		if (dataReceived > 0) {
             // Set string null-terminator (juts in case).
-            (*(unsigned char*)(ctx->DataBuffer + bufferOffset + dataReceived)) = 0;
+            LOG_PRINTF(("\t@@ bufferOffset: %d", bufferOffset));
+            *(ctx->DataBuffer + bufferOffset + dataReceived) = 0;
+            LOG_PRINTF(("\tCurrently in buffer: '%s'", ctx->DataBuffer));
 			// Try to extract all required response's properties.
 			_ExtractResponseProperties(ctx->DataBuffer, ctx);
 			// Check if we recieved complete header (\r\n\r\n).
 			headerEnd = strstr(ctx->DataBuffer, HTTP_HEADER_TERMINATOR);
 			// If we received complete http header.
 			if (headerEnd != NULL) {
-				LOG_PRINTF(("_ReadHeader() -> Found header terminator."));
+				LOG_PRINTF(("\tFound header terminator."));
 				// We set complete header flag.
 				ctx->Flags |= HEADER_RECEIVED;
 				// We calculate how much data is body.
@@ -435,11 +537,12 @@ static int _ReadHeader(HttpContext* ctx) {
 				lastFullProperty = (char*)_FindLast(ctx->DataBuffer, "\r\n");
 				// If we could not locate last complete property that means out buffer is too small.
 				if (lastFullProperty == NULL) {
-					LOG_PRINTF(("_ReadHeader() -> Buffer too small to receive response header."));
+					LOG_PRINTF(("\tBuffer too small to receive response header. Buffer does not contain header terminator \\r\\n\\r\\n neither 1 complete header property."));
 					// Buffer to small.
 					result = -1;
 					break;
 				}
+                LOG_PRINTF(("\t @@ lastFullProperty: '%s'", lastFullProperty));
 				// If lastFullProperty is last 2 charatcres of buffer, we have to keep it.
 				if ((ctx->DataBuffer + dataReceived + bufferOffset - lastFullProperty) == 2) {
 					// 2 as we keep 2 charactres.
@@ -451,7 +554,8 @@ static int _ReadHeader(HttpContext* ctx) {
 				// We move what left in buffer.
 				else {
 					// Calculate size of data left in buffer.
-					bufferOffset = ctx->DataBufferSize - (lastFullProperty - ctx->DataBuffer) - 2;
+					bufferOffset = ctx->DataBufferSize - (lastFullProperty - ctx->DataBuffer) - 2 -1;
+                    LOG_PRINTF(("\t@@ bufferOffset: %d", bufferOffset));
 					memmove(ctx->DataBuffer, lastFullProperty + 2, bufferOffset);
 				}
 			}
@@ -466,7 +570,7 @@ static int _ReadHeader(HttpContext* ctx) {
 	// Set how much data left in buffer.
 	ctx->DataInBuffer = bufferOffset;
 	return result;
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataReceived) {
@@ -663,7 +767,8 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Check if we already received response header.
 	if (!(ctx->Flags & HEADER_RECEIVED)) {
 		// We receive header.
-		result = _ReadHeader(ctx);
+		//result = _ReadHeader(ctx);
+        result = _ReadHttpHeader(ctx);
 		// Check for error.
 		if (result < 0) {
 			LOG_PRINTF(("_HttpRecv() -> _ReadHeader() call returned: %d.", result));
