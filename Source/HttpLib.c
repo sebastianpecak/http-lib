@@ -584,6 +584,8 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 	// Size of data received by VCS_RecieveRawData.
 	*dataReceived = 0;
 
+    LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
+
 	// Check if we are reading chunk right now.
 	// If not we have to find chunk size first.
 	if (!(ctx->Flags & READING_CHUNK)) {
@@ -599,7 +601,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 			);
 			// Check for error.
 			if (result != 0) {
-				LOG_PRINTF(("_ReceiveChunkedTransfer() -> VCS_RecieveRawData call returned: %d.", result));
+				LOG_PRINTF(("Data receiving error: %d", result));
 				return result;
 			}
 			// Increase DataInBuffer by dataReceived.
@@ -615,7 +617,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		chunkTerminator = strstr(ctx->DataBuffer, "\r\n");
 		// Check if we found terminator.
 		if (chunkTerminator == NULL) {
-			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Did not find chunk terminator in buffer."));
+			LOG_PRINTF(("\tDid not find chunk terminator in buffer."));
 			return -1;
 		}
 		// Save new chunk size.
@@ -628,12 +630,12 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 		if (ctx->ChunkSize == 0) {
 			// Reset flag that ending chunk is required.
 			ctx->Flags &= ~ENDING_CHUNK_REQUIRED;
-			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Received ending chunk."));
+			LOG_PRINTF(("\tGot ending chunk."));
 			*dataReceived = 0;
 			return 0;
 		}
 		else {
-			LOG_PRINTF(("_ReceiveChunkedTransfer() -> Start chunk: %d.", ctx->ChunkSize));
+			LOG_PRINTF(("\tNew chunk of size: %d.", ctx->ChunkSize));
 			// Set flags.
 			ctx->Flags |= /*ENDING_CHUNK_REQUIRED |*/ READING_CHUNK;
 		}
@@ -644,7 +646,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 	// If it is more than we can store in output buffer then we limit use bufferSize as limit.
 	toRecv = (toRecv > bufferSize ? bufferSize : toRecv);
 
-	LOG_PRINTF(("ToRecv: %d", toRecv));
+	//LOG_PRINTF(("ToRecv: %d", toRecv));
 
 	// If we have anything in buffer we have to receive it first.
 	if (ctx->DataInBuffer > toRecv) {
@@ -689,7 +691,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 
 	// Check if we completly read current chunk.
 	if (ctx->ChunkRead == ctx->ChunkSize) {
-		LOG_PRINTF(("_ReceiveChunkedTransfer() -> Chunk of size: %d received completely.", ctx->ChunkSize));
+		LOG_PRINTF(("\tChunk of size: %d received completely.", ctx->ChunkSize));
 		// Reset receiving flag.
 		ctx->Flags &= ~READING_CHUNK;
 		// Reset chunk read.
@@ -751,13 +753,15 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// How much data has been received.
 	unsigned short dataReceived = 0;
 
+    LOG_PRINTF(("_HttpRecv() ->"));
+
 	// Check if we have data buffer already created.
 	if (ctx->DataBuffer == NULL) {
 		// Create buffer.
 		ctx->DataBuffer = MemAlloc(HTTP_BUFFER_SIZE);
 		// Check for error.
 		if (ctx->DataBuffer == NULL) {
-			LOG_PRINTF(("_HttpRecv() -> Could not create DataBuffer of size: %d", HTTP_BUFFER_SIZE));
+			LOG_PRINTF(("\tCould not create DataBuffer of size: %d", HTTP_BUFFER_SIZE));
 			return 0;
 		}
 		// Save buffer size.
@@ -767,15 +771,14 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 	// Check if we already received response header.
 	if (!(ctx->Flags & HEADER_RECEIVED)) {
 		// We receive header.
-		//result = _ReadHeader(ctx);
         result = _ReadHttpHeader(ctx);
 		// Check for error.
 		if (result < 0) {
-			LOG_PRINTF(("_HttpRecv() -> _ReadHeader() call returned: %d.", result));
+			LOG_PRINTF(("\tHttp header receiving error: %d", result));
 			// For safety we return 0, as no data were received.
 			return 0;
 		}
-		LOG_PRINTF(("_HttpRecv() -> After receiving header we have %d bytes left in buffer.", ctx->DataInBuffer));
+		LOG_PRINTF(("\tHeader received successfully. Data left: %d", ctx->DataInBuffer));
 	}
 
 	// Here we are sure that response header has been received.
@@ -792,12 +795,12 @@ int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
 
 	// Check for errors.
 	if (result != 0) {
-		LOG_PRINTF(("_HttpRecv() -> _Receive*Transfer() call returned: %d.", result));
+		LOG_PRINTF(("\tData receiving error: %d", result));
 		return 0;
 	}
 	// There was no error.
 	else {
-		LOG_PRINTF(("_HttpRecv() -> Return: %d", dataReceived));
+		LOG_PRINTF(("\tData received: %d", dataReceived));
 		// And we return dataRecieved.
 		return (int)dataReceived;
 	}
