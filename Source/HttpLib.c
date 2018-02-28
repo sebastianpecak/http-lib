@@ -402,14 +402,18 @@ static int _ReadHeader(HttpContext* ctx) {
 
 	// Start receiving data from VCS.
 	do {
-		result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)(ctx->DataBuffer + bufferOffset), ctx->DataBufferSize - bufferOffset, &dataReceived, ctx->RecvTimeout);
-		// Check for errors.
-		/*if (result != 0) {
-			LOG_PRINTF(("_ReadHeader() -> VCS_RecieveRawData() call returned: %d.", result));
-			break;
-		}*/
+		result = VCS_RecieveRawData(
+            ctx->VCSSessionHandle,
+            (unsigned char*)(ctx->DataBuffer + bufferOffset),
+            // Receive bufferSize - 1 to provide slot for \0.
+            (ctx->DataBufferSize - bufferOffset - 1),
+            &dataReceived,
+            ctx->RecvTimeout
+        );
 		// Check if we received any data (expected behaviour).
 		if (dataReceived > 0) {
+            // Set string null-terminator (juts in case).
+            (*(unsigned char*)(ctx->DataBuffer + bufferOffset + dataReceived)) = 0;
 			// Try to extract all required response's properties.
 			_ExtractResponseProperties(ctx->DataBuffer, ctx);
 			// Check if we recieved complete header (\r\n\r\n).
