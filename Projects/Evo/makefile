@@ -132,7 +132,7 @@ $(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(ACTLib) $(VCSLib)
 ## Compile.
 ##----------------------------------------------------------------
 $(OutDir)\$(LibNameWork).o : $(SrcDir)\$(LibNameWork).c
-	$(EVOSDK)\bin\vrxcc $(COptions) $(Includes) $** -o $@
+	$(EVOSDK)\bin\vrxcc $(COptions) $(Includes) $** -o $@ -armcc,--C99
 
 ##----------------------------------------------------------------
 ## Clean configuration.

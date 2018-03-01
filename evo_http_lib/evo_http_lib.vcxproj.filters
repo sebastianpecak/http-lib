@@ -22,6 +22,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+    <Text Include="..\Projects\TODO.txt">
+      <Filter>Projects</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\HttpLib.h">
