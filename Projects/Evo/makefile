@@ -44,7 +44,7 @@ ACTIncludes = $(EVOACT)\Include
 ##----------------------------------------------------------------
 ## All includes packed as compiler parameters.
 ##----------------------------------------------------------------
-Includes = -I$(SDKIncludes) -I$(SelfIncludes) -I$(VCSLibIncludes) -I$(ACTIncludes)
+Includes = -I$(SDKIncludes) -I$(SelfIncludes) -I$(VCSLibIncludes) -I$(ACTIncludes) -I$(EOSSDK)\include
 
 ##----------------------------------------------------------------
 ## Output name.
@@ -125,7 +125,7 @@ $(OutDir)\$(LibNameOut).lib : $(OutDir)\$(LibNameWork).a $(ProjDir)\Projects\$(L
 ##----------------------------------------------------------------
 ## Link.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(ACTLib) $(VCSLib)
+$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(ACTLib) $(VCSLib) $(EOSSDK)\lib\svc_net.o
 	$(EVOSDK)\bin\vrxcc $(LOptions) $** -o $@
 
 ##----------------------------------------------------------------

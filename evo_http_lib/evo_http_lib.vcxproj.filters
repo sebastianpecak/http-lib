@@ -30,6 +30,9 @@
     <ClInclude Include="..\Include\HttpLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\StreamIface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Projects\httplib.lid">
