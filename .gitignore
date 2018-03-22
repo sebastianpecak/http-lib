@@ -16,3 +16,4 @@
 .vs/*.*
 *.user
 *.suo
+*.ipch
