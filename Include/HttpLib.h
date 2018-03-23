@@ -3,11 +3,13 @@
 
 #include <HttpStreamIface.h>
 #include <stdbool.h>
+#include <SVC_NET.H>
 
 ///////////////////////////////////////////////////////////////////////////////
 // HttpLib API return values.
-#define HTTP_ERROR       (-1)
-#define HTTP_SUCCESS     (0)
+#define HTTP_ERROR              (-1)
+#define HTTP_SUCCESS            (0)
+#define HTTP_INVALID_SOCKET     SOCKET_ERROR
 
 ///////////////////////////////////////////////////////////////////////////////
 // Library memory allocator and deallocator type.
@@ -267,6 +269,7 @@ extern "C" {
 #undef HttpDisconnect
 #endif
 #define HttpDisconnect(httpCtx) _HttpDisconnect(httpCtx, 0)
+#define HttpDisconnectForce(httpCtx) _HttpDisconnect(httpCtx, 0)
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef HttpSetRequestBodyRaw

@@ -2,7 +2,7 @@
 #define HTTPSTREAMIFACE_H
 
 #include <stdint.h>
-#include <string.h> // size_t.
+#include <string.h>
 
 ////////////////////////////////////////////////////////////////////
 typedef int HttpStream_t;

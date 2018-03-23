@@ -39,24 +39,30 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <NMakeBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=1
-nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=1</NMakeCleanCommandLine>
-    <NMakeOutput />
-    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>$(EVOSDK)\include;..\Include;$(EOSSDK)\include;..\..\evo_lib\Include;$(EVOACT)\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake ..\Projects\Evo\makefile</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>
+    </NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
+    <NMakeOutput>HTTP</NMakeOutput>
+    <NMakePreprocessorDefinitions>__thumb;LOGSYS_FLAG</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>..\Include\;$(EVOSDK)\include;..\..\evo_lib\Include;$(EOSSDK)\include;$(EVOACT)\Include</NMakeIncludeSearchPath>
+    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Release\CStringTools.o</NMakeForcedUsingAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <NMakeBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=0
-nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>nmake /f $(ProjectDir)\..\Projects\Evo\makefile clean ProjDir=$(ProjectDir)\.. DEBUG=0</NMakeCleanCommandLine>
-    <NMakeOutput />
-    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>..\..\evo_vcs_lib\Include;C:\eVoAps\SDK\1.2.0\VRXSDK\include;..\..\evo_http_lib\Include;C:\eVoAps\ACT2000\1.14.0\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake ..\Projects\Evo\makefile</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>
+    </NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
+    <NMakeOutput>HTTP</NMakeOutput>
+    <NMakePreprocessorDefinitions>__thumb</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>..\Include\;$(EVOSDK)\include;..\..\evo_lib\Include;$(EOSSDK)\include;$(EVOACT)\Include</NMakeIncludeSearchPath>
+    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Release\CStringTools.o</NMakeForcedUsingAssemblies>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
@@ -66,7 +72,7 @@ nmake /f $(ProjectDir)\..\Projects\Evo\makefile ProjDir=$(ProjectDir)\.. DEBUG=0
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\HttpLib.h" />
-    <ClInclude Include="..\Include\StreamIface.h" />
+    <ClInclude Include="..\Include\HttpStreamIface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\HttpLib.c" />

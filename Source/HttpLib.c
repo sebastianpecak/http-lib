@@ -1,9 +1,7 @@
 #include <HttpLib.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <logsys.h>
-#include <SVC_NET.H>
+#include <stdio.h>
+#include <CStringTools.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // This value is used for buffering response header data.
@@ -15,7 +13,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port, Timeout_ms to) {
     int32_t result = HTTP_ERROR;
-    ip_addr remoteAddress = 0;
     struct hostent* addrInfo = NULL;
     struct sockaddr_in serverAdr = { 0 };
     int operRes = 0;
@@ -24,8 +21,9 @@ static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port,
 
     // Try to create new socket.
     *stream = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (*stream != -1) {
+    if (*stream != HTTP_INVALID_SOCKET) {
         // Resolve remote address.
+        LOG_PRINTF(("\tResolving address: '%s'", url));
         operRes = gethostbyname(url, &addrInfo);
         if (operRes == 0) {
             // Format remote addres structure.
@@ -33,11 +31,20 @@ static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port,
             serverAdr.sin_port = htons(port);
             serverAdr.sin_len = sizeof(struct sockaddr_in);
             // Copy address.
-            LOG_PRINTF(("\taddrInfo->h_addr_list[0]: '%.*s'", addrInfo->h_length, addrInfo->h_addr_list[0]));
-            memcpy(&serverAdr.sin_addr.s_addr, addrInfo->h_addr_list[0], addrInfo->h_length);
-
+            if (addrInfo->h_addr_list) {
+                LOG_PRINTF((
+                    "Address resolved: %u.%u.%u.%d",
+                    addrInfo->h_addr_list[0][0],
+                    addrInfo->h_addr_list[0][1],
+                    addrInfo->h_addr_list[0][2],
+                    addrInfo->h_addr_list[0][3]
+                    ));
+                memcpy(&serverAdr.sin_addr.s_addr, addrInfo->h_addr_list[0], addrInfo->h_length);
+            }
+            // Free resources.
+            freehostent(addrInfo);
             // Try to connect.
-            operRes = connect(*stream, (struct sockaddr*)&serverAdr, sizeof(serverAdr));
+            result = connect(*stream, (struct sockaddr*)&serverAdr, sizeof(serverAdr));
         }
         else {
             LOG_PRINTF(("\tCould not resolve remote address, due to: %d, addrInfo: 0x%p", operRes, addrInfo));
@@ -58,7 +65,7 @@ static int32_t _SocketClose(HttpStream_t* stream, Timeout_ms to) {
     result = socketclose(*stream);
     if (result == 0)
         // Set invalid socket handle.
-        *stream = -1;
+        *stream = HTTP_INVALID_SOCKET;
 
     return result;
 }
@@ -112,19 +119,6 @@ static Deallocator_t MemFree = free;
 // Stream interface used for communication.
 static const HttpStreamIface_t* DataStreamIface = &DefaultHttpStream;
 
-int main() {
-    HttpStream_t newSocket = -1;
-    if (DataStreamIface->Open("www.google.pl", 8080, &newSocket, 500) == 0) {
-        LOG_PRINTF(("Successfully created new data stream."));
-
-        DataStreamIface->Write(newSocket, "GET http://www.google.pl/ HTTP/1.1", 64, NULL, 1000);
-        char buffer[1024];
-        DataStreamIface->Read(newSocket, buffer, sizeof(buffer), NULL, 1000);
-
-        DataStreamIface->Close(&newSocket, 500);
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 static const char* MethodsText[] = {
     "GET",
@@ -141,7 +135,7 @@ static const char* VersionsText[] = {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Prototypes.
-static int _ReceiveChunkedTransfer(char*, int, HttpContext*, unsigned short*);
+static int32_t _ReceiveChunkedTransfer(char*, size_t, HttpContext*, size_t*);
 
 ///////////////////////////////////////////////////////////////////////////////
 int32_t _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, char* request, size_t requestSize) {
@@ -268,7 +262,7 @@ int32_t _HttpGetProperty(const char* key, char* buffer, size_t bufferSize, const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int32_t _HttpSetRequestBody(const char* body, char* request, int32_t requestSize) {
+int32_t _HttpSetRequestBody(const char* body, char* request, size_t requestSize) {
     int32_t result = HTTP_ERROR;
     int requestLength = 0;
     int bodyLength = strlen(body);
@@ -287,8 +281,8 @@ int32_t _HttpSetRequestBody(const char* body, char* request, int32_t requestSize
         }
         // Request length.
         requestLength = strlen(request);
-        // Cehck if buffer is big enough to store body (2 bytes for header termination).
-        if ((requestSize - requestLength - bodyLength - 2) >= 0) {
+        // Check if buffer is big enough to store body (2 bytes for header termination).
+        if ((requestSize - requestLength - bodyLength - 2) > 0) {
             // Set request body.
             sprintf(
                 (request + requestLength),
@@ -339,68 +333,76 @@ static void _ResetConnectionContext(HttpContext* ctx) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int32_t _HttpDisconnect(HttpContext* httpContext, unsigned char force) {
-    int32_t result = HTTP_ERROR;
-
+int32_t _HttpDisconnect(HttpContext* ctx, bool useForce) {
     LOG_PRINTF(("_HttpDisconnect() ->"));
 
     // Drop data buffer.
-    if (httpContext->DataBuffer && httpContext->DataBufferSize > 0) {
-        MemFree(httpContext->DataBuffer);
-        httpContext->DataBuffer = NULL;
-        httpContext->DataBufferSize = 0;
+    if (ctx->DataBuffer && ctx->DataBufferSize > 0) {
+        MemFree(ctx->DataBuffer);
+        ctx->DataBuffer = NULL;
+        ctx->DataBufferSize = 0;
     }
-    _ResetConnectionContext(httpContext);
+    _ResetConnectionContext(ctx);
 
-
-
-    // Disconnect from remote host.
-    /*result = VCS_Disconnect(httpContext->VCSSessionHandle, httpContext->Timeout);
-    if (!force && result != 0)
-        return result;
-    // End session with VCS.
-    result = VCS_DropSession(&httpContext->VCSSessionHandle, httpContext->Timeout);
-    if (!force && result != 0)
-        return result;
-    // Return success.
-    return 0;*/
+    return DataStreamIface->Close(&ctx->Socket, ctx->Timeout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int _HttpSend(const void* request, int requestSize, HttpContext* httpContext) {
+int32_t _HttpSend(const void* request, size_t requestSize, HttpContext* ctx) {
+    int32_t result = HTTP_ERROR;
     char buffer[64] = { 0 };
-    int res = 0;
-    unsigned short dataRecv = 0;
+    size_t dataSize = 0;
 
     LOG_PRINTF(("_HttpSend() ->"));
 
-    while (httpContext->Flags & ENDING_CHUNK_REQUIRED && res == 0) {
-        res = _ReceiveChunkedTransfer(buffer, sizeof(buffer), httpContext, &dataRecv);
-    }
-
+    // Cleanup stream.
+    while (ctx->Flags & ENDING_CHUNK_REQUIRED && _ReceiveChunkedTransfer(buffer, sizeof(buffer), ctx, &dataSize) == 0);
     // We have to reset connection context to get rid of trash data.
-    _ResetConnectionContext(httpContext);
-    return VCS_TransmitRawData(httpContext->VCSSessionHandle, request, requestSize, httpContext->Timeout);
+    _ResetConnectionContext(ctx);
+    // Write data to http stream.
+    result = DataStreamIface->Write(ctx->Socket, request, requestSize, &dataSize, ctx->Timeout);
+
+    return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// hexString is a part of bigger data buffer.
+// Returns converted value.
+static size_t _StringHexToInt(char* hexString, size_t hexStringLength) {
+    size_t result = 0;
+    char charCache = 0;
+
+    charCache = hexString[hexStringLength];
+    // Set string terminator.
+    hexString[hexStringLength] = 0;
+    // Convert value.
+    result = strtol(hexString, NULL, 16);
+    // Restore last character.
+    hexString[hexStringLength] = charCache;
+
+    return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function converts hex string to integer value.
 // As parameters it takes: string pointer and its length (path of big buffer).
 // Returns converted value.
-static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
-    // Null-terminated copy of hexString.
-    char* hexZeroString = NULL;
+/*static int32_t _HexToInt(const char* hexString, size_t hexStringLength) {
+    int32_t result = HTTP_ERROR;
+    // Null-terminated copy of hexString (use C99 VLA).
+    //char* hexZeroString = NULL;
+    char hexZeroString[hexStringLength + 1] = { 0 };
     // Result buffer.
-    int result = 0;
+    //int result = 0;
 
     // Allocate buffer for copy of hexString (null-terminated).
-    hexZeroString = MemAlloc(hexStringLength + 1);
+    //hexZeroString = MemAlloc(hexStringLength + 1);
     // Check for errors.
-    if (hexZeroString == NULL)
+    //if (hexZeroString == NULL)
         // Return error.
-        return -1;
+       //return -1;
     // Set string terminator.
-    hexZeroString[hexStringLength] = '\0';
+    //hexZeroString[hexStringLength] = '\0';
     // Copy string.
     strncpy(hexZeroString, hexString, hexStringLength);
     // Convert value.
@@ -408,7 +410,7 @@ static int _HexToInt(const char* hexString, unsigned int hexStringLength) {
     // Free buffer.
     MemFree(hexZeroString);
     return result;
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function extracts properties values from response's header.
@@ -427,13 +429,12 @@ static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
     result = _HttpGetProperty("Transfer-Encoding", propertyValue, sizeof(propertyValue), buffer);
     // If we have chunked transfer, set all flags.
     if (strstr(propertyValue, "chunked") != NULL)
-        //ctx->Flags |= TRANSFER_CHUNKED;
         ctx->Flags |= TRANSFER_CHUNKED | ENDING_CHUNK_REQUIRED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function finds last occurence of given value.
-static const char* _FindLast(const char* source, const char* value) {
+/*static const char* _FindLast(const char* source, const char* value) {
     const char* last = NULL;
     const char* current = NULL;
 
@@ -446,7 +447,7 @@ static const char* _FindLast(const char* source, const char* value) {
             last = current;
         }
     }
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 static void _HandleEndOfHttpHeader(const char* headerEnd, HttpContext* ctx) {
@@ -478,9 +479,10 @@ static void _HandleLastCompleteProperty(const char* lastFullProperty, HttpContex
 // This function is responsible for receiving complete response header.
 // It parses properties and modifies HttpContext configuration.
 // Returns: non-zero value on error.
-static int _ReadHttpHeader(HttpContext* ctx) {
-    int result = 0;
-    unsigned short dataReceived = 0;
+static int32_t _ReadHttpHeader(HttpContext* ctx) {
+    int32_t result = HTTP_ERROR;
+    //unsigned short dataReceived = 0;
+    size_t dataReceived = 0;
     const char* headerEnd = NULL;
     const char* lastCompleteProperty = NULL;
 
@@ -488,9 +490,17 @@ static int _ReadHttpHeader(HttpContext* ctx) {
 
     do {
         // Receive data from server.
-        result = VCS_RecieveRawData(
+        /*result = VCS_RecieveRawData(
             ctx->VCSSessionHandle,
             (unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
+            // Receive bufferSize - 1 to provide slot for \0.
+            (ctx->DataBufferSize - ctx->DataInBuffer - 1),
+            &dataReceived,
+            ctx->RecvTimeout
+        );*/
+        result = DataStreamIface->Read(
+            ctx->Socket,
+            (ctx->DataBuffer + ctx->DataInBuffer),
             // Receive bufferSize - 1 to provide slot for \0.
             (ctx->DataBufferSize - ctx->DataInBuffer - 1),
             &dataReceived,
@@ -499,7 +509,7 @@ static int _ReadHttpHeader(HttpContext* ctx) {
 
         LOG_PRINTF(("\t@@ dataReceived: %d", dataReceived));
         // Check if we received any data.
-        if (dataReceived > 0) {
+        if (result == HTTP_SUCCESS && dataReceived > 0) {
             // Update data amount in buffer.
             ctx->DataInBuffer += dataReceived;
             // Set string-zero terminator.
@@ -520,7 +530,8 @@ static int _ReadHttpHeader(HttpContext* ctx) {
             else {
                 // Try to locate last complete property in this part.
                 // Next property (which is not complete) will be moved to buffer's beginning.
-                lastCompleteProperty = _FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
+                //lastCompleteProperty = _FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
+                lastCompleteProperty = CStr_FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
                 // If we found last complete property, we shift remaining data to the buffer's beginning.
                 if (lastCompleteProperty) {
                     LOG_PRINTF(("\t@@ lastCompleteProperty: '%s'", lastCompleteProperty));
@@ -531,7 +542,7 @@ static int _ReadHttpHeader(HttpContext* ctx) {
                     // TODO #1
                     LOG_PRINTF(("\tBuffer too small to receive response header. Buffer does not contain header terminator '\\r\\n\\r\\n' neither 1 complete header property."));
                     // Buffer too small.
-                    return -1;
+                    return HTTP_ERROR;
                 }
             }
         }
@@ -539,18 +550,17 @@ static int _ReadHttpHeader(HttpContext* ctx) {
         else {
             LOG_PRINTF(("\tNo data read from TCP socket. Result: %d.", result));
             // Header could not be read.
-            return -1;
+            return HTTP_ERROR;
         }
     } while (!(ctx->Flags & HEADER_RECEIVED));
 
     // Return success.
-    return 0;
+    return HTTP_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataReceived) {
-    // Result buffer.
-    int result = 0;
+static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpContext* ctx, size_t* dataReceived) {
+    int32_t result = HTTP_ERROR;
     // Chunk size terminator pointer.
     char* chunkTerminator = NULL;
     unsigned int toRecv = 0;
@@ -567,15 +577,23 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
         // If we have no data in DataBuffer we have to fill it up.
         // [Value]\r\n.
         if (ctx->DataInBuffer < 3) {
-            result = VCS_RecieveRawData(
+            /*result = VCS_RecieveRawData(
                 ctx->VCSSessionHandle,
                 (unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
                 (ctx->DataBufferSize - ctx->DataInBuffer),
                 dataReceived,
                 ctx->RecvTimeout
+            );*/
+            result = DataStreamIface->Read(
+                ctx->Socket,
+                (ctx->DataBuffer + ctx->DataInBuffer),
+                (ctx->DataBufferSize - ctx->DataInBuffer),
+                dataReceived,
+                ctx->RecvTimeout
             );
+
             // Check for error.
-            if (result != 0) {
+            if (result != HTTP_SUCCESS) {
                 LOG_PRINTF(("Data receiving error: %d", result));
                 return result;
             }
@@ -593,10 +611,11 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
         // Check if we found terminator.
         if (chunkTerminator == NULL) {
             LOG_PRINTF(("\tDid not find chunk terminator in buffer."));
-            return -1;
+            return HTTP_ERROR;
         }
         // Save new chunk size.
-        ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
+        //ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
+        ctx->ChunkSize = _StringHexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
         // Throw out chunk size from DataBuffer.
         ctx->DataInBuffer = (ctx->DataInBuffer - (chunkTerminator - ctx->DataBuffer) - 2);
         memmove(ctx->DataBuffer, (chunkTerminator + 2), ctx->DataInBuffer);
@@ -607,7 +626,7 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
             ctx->Flags &= ~ENDING_CHUNK_REQUIRED;
             LOG_PRINTF(("\tGot ending chunk."));
             *dataReceived = 0;
-            return 0;
+            return HTTP_SUCCESS;
         }
         else {
             LOG_PRINTF(("\tNew chunk of size: %d.", ctx->ChunkSize));
@@ -650,13 +669,21 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
     }
 
     // Use VCS_Recv to receive all left toRecv bytes.
-    result = VCS_RecieveRawData(
+    /*result = VCS_RecieveRawData(
         ctx->VCSSessionHandle,
         (unsigned char*)(buffer + dataRecvTotal),
         toRecv,
         dataReceived,
         ctx->RecvTimeout
+    );*/
+    result = DataStreamIface->Read(
+        ctx->Socket,
+        (buffer + dataRecvTotal),
+        toRecv,
+        dataReceived,
+        ctx->RecvTimeout
     );
+
     // Increase dataRecvTotal by dataReceived (in current call).
     dataRecvTotal += *dataReceived;
     // Increase ChunkRead as global state variable.
@@ -673,15 +700,16 @@ static int _ReceiveChunkedTransfer(char* buffer, int bufferSize, HttpContext* ct
 
     // Save datReceived.
     *dataReceived = dataRecvTotal;
-    return 0;
+    return HTTP_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function receives http data in plain encoding.
 // Returns: non-zero value on error.
-static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx, unsigned short* dataRecieved) {
-    int result = 0;
-    int dataToBeCopied = 0;
+static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContext* ctx, size_t* dataRecieved) {
+    //int result = 0;
+    int32_t result = HTTP_SUCCESS;
+    size_t dataToBeCopied = 0;
 
     // If we have data in DataBuffer, we receive it first.
     if (ctx->DataInBuffer > 0) {
@@ -697,20 +725,35 @@ static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx,
         *dataRecieved = dataToBeCopied;
         // If dataToBeCopied is less than buffer size, we get additional data from VCS.
         if (dataToBeCopied < bufferSize) {
-            result = VCS_RecieveRawData(
+            /*result = VCS_RecieveRawData(
                 ctx->VCSSessionHandle,
                 (unsigned char*)(buffer + dataToBeCopied),
                 (bufferSize - dataToBeCopied),
                 dataRecieved,
                 ctx->RecvTimeout
+            );*/
+            result = DataStreamIface->Read(
+                ctx->Socket,
+                (buffer + dataToBeCopied),
+                (bufferSize - dataToBeCopied),
+                dataRecieved,
+                ctx->RecvTimeout
             );
+
             // We have to add dataToBeCopied value, as we are completing buffer.
             *dataRecieved += dataToBeCopied;
         }
     }
     // There is no data in DataBuffer, so we simply receive new data from VCS.
     else
-        result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, dataRecieved, ctx->RecvTimeout);
+        //result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, dataRecieved, ctx->RecvTimeout);
+        result = DataStreamIface->Read(
+            ctx->Socket,
+            buffer,
+            bufferSize,
+            dataRecieved,
+            ctx->RecvTimeout
+        );
 
     // Return result.
     return result;
@@ -718,11 +761,12 @@ static int _ReceivePlainTransfer(char* buffer, int bufferSize, HttpContext* ctx,
 
 ///////////////////////////////////////////////////////////////////////////////
 // Here we specify how much data we can recieve.
-int _HttpRecv(char* buffer, int bufferSize, HttpContext* ctx) {
-    // Result buffer.
-    int result = 0;
+int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
+    //int result = 0;
+    int32_t result = HTTP_ERROR;
     // How much data has been received.
-    unsigned short dataReceived = 0;
+    //unsigned short dataReceived = 0;
+    size_t dataReceived = 0;
 
     LOG_PRINTF(("_HttpRecv() ->"));
 

@@ -30,7 +30,7 @@
     <ClInclude Include="..\Include\HttpLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\StreamIface.h">
+    <ClInclude Include="..\Include\HttpStreamIface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

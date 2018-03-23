@@ -1,4 +1,4 @@
-HTTPLIB id=24 addr=70a80000 ver=1.0 thumb
+HTTP id=24 addr=70a80000 ver=1.0 thumb
 1 _HttpInitRequest
 2 _HttpSetProperty
 3 _HttpSetRequestBody

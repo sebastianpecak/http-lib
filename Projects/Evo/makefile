@@ -1,164 +1,110 @@
 ##----------------------------------------------------------------
-## Check makefile requirements.
+## Include files.
 ##----------------------------------------------------------------
-!ifdef ProjDir
-!ifdef DEBUG
-
-##----------------------------------------------------------------
-## Version file.
-##----------------------------------------------------------------
-!include $(ProjDir)\Projects\version
+!include "..\Projects\version.txt"
+!include "parsed_proj.txt"
+!include "sign_config.txt"
 
 ##----------------------------------------------------------------
 ## Project directoires.
 ##----------------------------------------------------------------
-!if $(DEBUG) == 0
-OutDir = $(ProjDir)\Output\Evo\Files\Release
-SignDir = $(ProjDir)\Output\Evo\Files\Release\Sign\Flash
+!if "$(CONF)" == "DEBUG"
+OutDir = ..\Output\Evo\Files\Debug
 !else
-OutDir = $(ProjDir)\Output\Evo\Files\Debug
-SignDir = $(ProjDir)\Output\Evo\Files\Debug\Sign\Flash
+OutDir = ..\Output\Evo\Files\Release
 !endif
-SrcDir = $(ProjDir)\Source
-VCSLibDir = ..\..\evo_vcs_lib
+SignDir = $(OutDir)\Sign\Flash
+SrcDir = ..\Source
+ObjDir = $(OutDir)\Obj
+ProjDir = ..\..\..\evo_http_lib
 
-##----------------------------------------------------------------
-## File signature variables.
-##----------------------------------------------------------------
-RemoteDir = \\192.168.65.17\dpajak\sign
-DirOnRemote = D:\shared\dpajak\sign
-FileSignatureTool = "C:\Program Files\Verifone\fst\filesignature.exe"
-RemoteHost = \\onir
-RemoteUser = mp
-RemotePwd = mp
-SignTool = signfile_evo.cmd
-##----------------------------------------------------------------
-## All required include files.
-##----------------------------------------------------------------
-SDKIncludes = $(EVOSDK)\Include
-#VMACIncludes = $(EVOVMAC)\Include
-SelfIncludes = $(ProjDir)\Include
-VCSLibIncludes = $(VCSLibDir)\Include
-ACTIncludes = $(EVOACT)\Include
-
-##----------------------------------------------------------------
-## All includes packed as compiler parameters.
-##----------------------------------------------------------------
-Includes = -I$(SDKIncludes) -I$(SelfIncludes) -I$(VCSLibIncludes) -I$(ACTIncludes) -I$(EOSSDK)\include
-
-##----------------------------------------------------------------
-## Output name.
-##----------------------------------------------------------------
-LibNameWork = httplib
-LibNameOut = http
+Objects = $(SOURCES:.c=.o)
+!if "$(CONF)" == "DEBUG"
+Objects = $(Objects:..\Source=..\Output\Evo\Files\Debug\Obj)
+!else
+Objects = $(Objects:..\Source=..\Output\Evo\Files\Release\Obj)
+!endif
 
 ##----------------------------------------------------------------
 ## Compiler options.
 ##----------------------------------------------------------------
-!if $(DEBUG) == 0
-COptions = -p -v -shlabs -c
+!if "$(CONF)" == "DEBUG"
+COptions = -p -v -g -c -shlabs -armcc,--C99
 !else
-COptions = -p -v -g -shlabs -c -DLOGSYS_FLAG
+COptions = -p -v -c -shlabs -armcc,--C99
 !endif
 
 ##----------------------------------------------------------------
 ## Linker options.
 ##----------------------------------------------------------------
-!if $(DEBUG) == 0
+!if "$(CONF)" == "DEBUG"
+LOptions = -p -v -g -map -shlpic
+!else
 LOptions = -p -v -shlpic
-!else
-LOptions = -p -v -shlpic -g -map
 !endif
-
-##----------------------------------------------------------------
-## Linkable objects.
-##----------------------------------------------------------------
-!if $(DEBUG) == 0
-VCSLib = $(VCSLibDir)\Output\Evo\Files\Release\vcslib.o
-!else
-VCSLib = $(VCSLibDir)\Output\Evo\Files\Debug\vcslib.o
-!endif
-ACTLib = $(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o
 
 ##----------------------------------------------------------------
 ## Build configuration.
 ##----------------------------------------------------------------
-pseudoOut : $(SignDir)\$(LibNameOut).lib.p7s
+build: $(SignDir)\$(OUTPUTFILE).lib.p7s
 
 ##----------------------------------------------------------------
 ## Sign shared library.
 ##----------------------------------------------------------------
-$(SignDir)\$(LibNameOut).lib.p7s : OutputConfig
+$(SignDir)\$(OUTPUTFILE).lib.p7s : BinaryConfiguration
 # Empty remote directory.
 	del $(RemoteDir)\test2\* /Q
 # Copy output file.
-	copy $(OutDir)\$(LibNameOut).lib $(RemoteDir)\test2\$(LibNameOut).lib
+	copy $(OutDir)\$(OUTPUTFILE).lib $(RemoteDir)\test2\$(OUTPUTFILE).lib
 # Generate FST file.
-	psexec $(RemoteHost) -u $(RemoteUser) -p $(RemotePwd) $(DirOnRemote)\$(SignTool) test2/$(LibNameOut).lib
+	psexec $(RemoteHost) -u $(RemoteUser) -p $(RemotePwd) $(DirOnRemote)\$(SignTool) test2/$(OUTPUTFILE).lib
 # Generate file signature.
-	psexec $(RemoteHost) -u $(RemoteUser) -p $(RemotePwd) $(FileSignatureTool)  $(DirOnRemote)\test2\$(LibNameOut).lib.fst
+	psexec $(RemoteHost) -u $(RemoteUser) -p $(RemotePwd) $(FileSignatureTool)  $(DirOnRemote)\test2\$(OUTPUTFILE).lib.fst
 # Download file signature.
-	copy $(RemoteDir)\test2\$(LibNameOut).lib.p7s $(SignDir)\$(LibNameOut).lib.p7s
+	copy $(RemoteDir)\test2\$(OUTPUTFILE).lib.p7s $(SignDir)\$(OUTPUTFILE).lib.p7s
 
 ##----------------------------------------------------------------
 ## Output configuration.
 ##----------------------------------------------------------------
-OutputConfig : $(OutDir)\$(LibNameOut).lib
+BinaryConfiguration : $(OutDir)\$(OUTPUTFILE).lib
 # Set library version.
 	$(EVOSDK)\bin\vrxhdr -v $(VER) $**
 
 ##----------------------------------------------------------------
 ## Create shared library out of httplib archive.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameOut).lib : $(OutDir)\$(LibNameWork).a $(ProjDir)\Projects\$(LibNameWork).lid
+$(OutDir)\$(OUTPUTFILE).lib : $(OutDir)\$(OUTPUTFILE).a ..\Projects\$(OUTPUTFILE).lid
 # Copy lid file to output dir.
-	copy $(ProjDir)\Projects\$(LibNameWork).lid $(OutDir)\$(LibNameWork).lid
+	copy ..\Projects\$(OUTPUTFILE).lid $(OutDir)\$(OUTPUTFILE).lid
 # Change directory to output dir (vrxlib tool requirement).
-	cd $(OutDir)
+	pushd $(OutDir) & $(EVOSDK)\bin\vrxlib -p $(OUTPUTFILE) & popd
 # Call vrxlib.
-	$(EVOSDK)\bin\vrxlib -p $(LibNameWork)
 # Remove copied *.lid file.
-	del $(OutDir)\$(LibNameWork).lid /Q
-# Rename library file.
-	move $(OutDir)\$(LibNameWork).lib $(OutDir)\$(LibNameOut).lib
+	del $(OutDir)\$(OUTPUTFILE).lid
 
 ##----------------------------------------------------------------
 ## Link.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameWork).a : $(OutDir)\$(LibNameWork).o $(ACTLib) $(VCSLib) $(EOSSDK)\lib\svc_net.o
-	$(EVOSDK)\bin\vrxcc $(LOptions) $** -o $@
+$(OutDir)\$(OUTPUTFILE).a: $(Objects) $(LIBS)
+	$(EVOSDK)\bin\evocc $(LOptions) $** -o $@
 
 ##----------------------------------------------------------------
 ## Compile.
 ##----------------------------------------------------------------
-$(OutDir)\$(LibNameWork).o : $(SrcDir)\$(LibNameWork).c
-	$(EVOSDK)\bin\vrxcc $(COptions) $(Includes) $** -o $@ -armcc,--C99
+{$(SrcDir)}.c{$(ObjDir)}.o:
+    echo Compiling '$(@B).c':
+    $(EVOSDK)\bin\evocc $(COptions) $(INCLUDES) $(DEFINES) $(SrcDir)\$(@B).c -o $@
 
 ##----------------------------------------------------------------
 ## Clean configuration.
 ##----------------------------------------------------------------
 clean:
-	del $(OutDir)\*.a /Q
-	del $(OutDir)\*.o /Q
-	del $(OutDir)\*.lib /Q
-	del $(OutDir)\*.axf /Q
-	del $(OutDir)\*.map /Q
-	del $(OutDir)\*.err /Q
+    del $(OutDir)\*.* /Q
+    del $(SignDir)\*.* /Q
+    del $(ObjDir)\*.* /Q
 
 ##----------------------------------------------------------------
-## If DEBUG was not defined.
+## Install configuration.
 ##----------------------------------------------------------------
-!else
-
-!error You forgot to define 'DEBUG' macro containing project's base directory! 
-
-!endif
-
-##----------------------------------------------------------------
-## If ProjDir was not defined.
-##----------------------------------------------------------------
-!else
-
-!error You forgot to define 'ProjDir' macro containing project's base directory! 
-
-!endif
+install:
+    echo Not implemented yet.
