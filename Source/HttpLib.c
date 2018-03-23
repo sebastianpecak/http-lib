@@ -11,11 +11,57 @@
 #define IMPLESS(x) x
 
 ///////////////////////////////////////////////////////////////////////////////
-static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port, Timeout_ms to) {
+static int32_t _GetRemoteAddress(const char* address, in_addr_t* output) {
     int32_t result = HTTP_ERROR;
     struct hostent* addrInfo = NULL;
-    struct sockaddr_in serverAdr = { 0 };
-    int operRes = 0;
+    ip_addr inetAddress = 0;
+    // Reset output.
+    *output = 0;
+
+    LOG_PRINTF(("_GetRemoteAddress() -> address: '%s'", address));
+
+    result = gethostbyname(address, &addrInfo);
+    // On success.
+    if (result == HTTP_SUCCESS) {
+        // Copy address to output.
+        memcpy(output, addrInfo->h_addr_list[0], addrInfo->h_length);
+        // Free resources.
+        freehostent(addrInfo);
+    }
+    // On error try to get info by address.
+    else {
+        result = inet_aton(address, &inetAddress);
+        // On success.
+        if (result == 1) {
+            result = gethostbyaddr((char*)&inetAddress, sizeof(inetAddress), AF_INET, &addrInfo);
+            if (result == HTTP_SUCCESS) {
+                // Copy address to output.
+                memcpy(output, addrInfo->h_addr_list[0], addrInfo->h_length);
+                // Free resources.
+                freehostent(addrInfo);
+            }
+            else
+                LOG_PRINTF(("\tHost not found."));
+        }
+        // Invalid address.
+        else
+            LOG_PRINTF(("\tAddress is incorrect."));
+    }
+
+    LOG_PRINTF((
+        "Output: %u.%u.%u.%d",
+        ((uint8_t*)output)[0],
+        ((uint8_t*)output)[1],
+        ((uint8_t*)output)[2],
+        ((uint8_t*)output)[3]
+        ));
+    return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port, Timeout_ms to) {
+    int32_t result = HTTP_ERROR;
+    struct sockaddr_in serverAddress = { 0 };
 
     LOG_PRINTF(("_SocketOpen() ->"));
 
@@ -23,31 +69,17 @@ static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port,
     *stream = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (*stream != HTTP_INVALID_SOCKET) {
         // Resolve remote address.
-        LOG_PRINTF(("\tResolving address: '%s'", url));
-        operRes = gethostbyname(url, &addrInfo);
-        if (operRes == 0) {
+        result = _GetRemoteAddress(url, &serverAddress.sin_addr.s_addr);
+        if (result == HTTP_SUCCESS) {
             // Format remote addres structure.
-            serverAdr.sin_family = AF_INET;
-            serverAdr.sin_port = htons(port);
-            serverAdr.sin_len = sizeof(struct sockaddr_in);
-            // Copy address.
-            if (addrInfo->h_addr_list) {
-                LOG_PRINTF((
-                    "Address resolved: %u.%u.%u.%d",
-                    addrInfo->h_addr_list[0][0],
-                    addrInfo->h_addr_list[0][1],
-                    addrInfo->h_addr_list[0][2],
-                    addrInfo->h_addr_list[0][3]
-                    ));
-                memcpy(&serverAdr.sin_addr.s_addr, addrInfo->h_addr_list[0], addrInfo->h_length);
-            }
-            // Free resources.
-            freehostent(addrInfo);
+            serverAddress.sin_family = AF_INET;
+            serverAddress.sin_port = htons(port);
+            serverAddress.sin_len = sizeof(struct sockaddr_in);
             // Try to connect.
-            result = connect(*stream, (struct sockaddr*)&serverAdr, sizeof(serverAdr));
+            result = connect(*stream, (struct sockaddr*)&serverAddress, sizeof(struct sockaddr));
         }
         else {
-            LOG_PRINTF(("\tCould not resolve remote address, due to: %d, addrInfo: 0x%p", operRes, addrInfo));
+            LOG_PRINTF(("\tCould not resolve remote address, due to: %d", result));
         }
     }
     // On socket creation error.
@@ -76,7 +108,10 @@ static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize,
     int recvRes = 0;
     *dataRead = 0;
 
+    LOG_PRINTF(("_SocketRead() ->"));
+
     recvRes = recv(stream, buffer, bufferSize, 0);
+    LOG_PRINTF(("\trecvRes: %d, errno: %d", recvRes, errno));
     // Check if we received some data.
     if (recvRes > 0) {
         *dataRead = (size_t)recvRes;
@@ -89,16 +124,54 @@ static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize,
 ///////////////////////////////////////////////////////////////////////////////
 static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSize, size_t* dataWritten, Timeout_ms to) {
     int32_t result = HTTP_ERROR;
-    int sendRes = 0;
+    unsigned long startTime = 0;
+    fd_set writeSet = { 0 };
+    struct timeval selectTo = { 0 };
     *dataWritten = 0;
 
-    sendRes = send(stream, data, dataSize, 0);
-    if (sendRes >= 0) {
-        *dataWritten = dataSize;
-        // Check if we sent all data.
-        if (sendRes == dataSize)
-            result = HTTP_SUCCESS;
-    }
+    to = 10000;
+    LOG_PRINTF(("_SocketWrite() -> to:%d", to));
+
+    startTime = read_ticks();
+    // Do until all bytes are sent.
+    do {
+        result = send(stream, (uint8_t*)data + *dataWritten, dataSize - *dataWritten, 0);
+        LOG_PRINTF(("\tsend(): %d", result));
+        if (result >= 0) {
+            // Update number of bytes sent.
+            *dataWritten += result;
+        }
+        // On send error.
+        else if (result == HTTP_ERROR) {
+            // If there is no space in internal socket buffer.
+            if (errno == EWOULDBLOCK) {
+                FD_SET(stream, &writeSet);
+                selectTo.tv_usec = to * 1000;
+                LOG_PRINTF(("\tselectTo.tv_usec: %d", selectTo.tv_usec));
+                result = select(stream + 1, NULL, &writeSet, NULL, &selectTo);
+                LOG_PRINTF(("select(): %d", result));
+                // On success we can try to send more data.
+                if (result > 0)
+                    continue;
+                // Permanent error.
+                else {
+                    LOG_PRINTF(("\tOccured timeout or internal error."));
+                    break;
+                }
+            }
+            // Other unhandled error.
+            else {
+                LOG_PRINTF(("\tError occured during data transmission, errno: %d, socketerrno: %d", errno, socketerrno(stream)));
+                break;
+            }
+        }
+    } while (*dataWritten < dataSize && (read_ticks() - startTime) < to);
+
+    // If we sent all bytes, then success.
+    if (*dataWritten == dataSize)
+        result = HTTP_SUCCESS;
+    else
+        result = HTTP_ERROR;
 
     return result;
 }
