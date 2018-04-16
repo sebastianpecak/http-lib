@@ -41,8 +41,9 @@
     <IntDir>$(Configuration)\</IntDir>
     <NMakeBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
 nmake ..\Projects\Evo\makefile</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>
-    </NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake -f ..\Projects\Evo\makefile clean
+nmake ..\Projects\Evo\makefile</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
 nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
     <NMakeOutput>HTTP</NMakeOutput>
@@ -55,8 +56,9 @@ nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
     <IntDir>$(Configuration)\</IntDir>
     <NMakeBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
 nmake ..\Projects\Evo\makefile</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>
-    </NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
+nmake -f ..\Projects\Evo\makefile clean
+nmake ..\Projects\Evo\makefile</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>vcproj_parser.exe $(ProjectName).vcxproj $(Configuration) $(Platform) &gt; ..\Projects\Evo\parsed_proj.txt
 nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
     <NMakeOutput>HTTP</NMakeOutput>

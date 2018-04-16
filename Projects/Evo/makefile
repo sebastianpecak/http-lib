@@ -86,22 +86,28 @@ $(OutDir)\$(OUTPUTFILE).lib : $(OutDir)\$(OUTPUTFILE).a ..\Projects\$(OUTPUTFILE
 ## Link.
 ##----------------------------------------------------------------
 $(OutDir)\$(OUTPUTFILE).a: $(Objects) $(LIBS)
-	$(EVOSDK)\bin\evocc $(LOptions) $** -o $@
+	$(EVOSDK)\bin\vrxcc $(LOptions) $** -o $@
 
 ##----------------------------------------------------------------
 ## Compile.
 ##----------------------------------------------------------------
 {$(SrcDir)}.c{$(ObjDir)}.o:
     echo Compiling '$(@B).c':
-    $(EVOSDK)\bin\evocc $(COptions) $(INCLUDES) $(DEFINES) $(SrcDir)\$(@B).c -o $@
+    $(EVOSDK)\bin\vrxcc $(COptions) $(INCLUDES) $(DEFINES) $(SrcDir)\$(@B).c -o $@
 
 ##----------------------------------------------------------------
 ## Clean configuration.
 ##----------------------------------------------------------------
 clean:
-    del $(OutDir)\*.* /Q
-    del $(SignDir)\*.* /Q
-    del $(ObjDir)\*.* /Q
+    del $(OutDir)\*.out /Q
+	del $(SignDir)\*.p7s /Q
+	del $(ObjDir)\*.o /Q
+	del $(OutDir)\*.axf /Q
+	del $(OutDir)\*.map /Q
+    del $(OutDir)\*.a /Q
+    del $(OutDir)\*.err /Q
+    del $(OutDir)\*.lib /Q
+    del $(OutDir)\*.o /Q
 
 ##----------------------------------------------------------------
 ## Install configuration.
