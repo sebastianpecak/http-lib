@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evo_http_lib", "evo_http_lib\evo_http_lib.vcxproj", "{5D444CEA-AA9D-4232-8CD5-18E2B099837A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD} = {725BCBF3-D45F-4834-9F4F-843017CF6ECD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evo_lib", "..\evo_lib\evo_lib\evo_lib.vcxproj", "{725BCBF3-D45F-4834-9F4F-843017CF6ECD}"
 EndProject
@@ -22,9 +25,11 @@ Global
 		{5D444CEA-AA9D-4232-8CD5-18E2B099837A}.Release|Win32.Build.0 = Release|Win32
 		{5D444CEA-AA9D-4232-8CD5-18E2B099837A}.Release|x64.ActiveCfg = Release|Win32
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|Win32.Build.0 = Debug|Win32
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|x64.ActiveCfg = Debug|x64
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|x64.Build.0 = Debug|x64
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|Win32.ActiveCfg = Release|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|Win32.Build.0 = Release|Win32
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|x64.ActiveCfg = Release|x64
 		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection

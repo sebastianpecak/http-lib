@@ -49,7 +49,7 @@ nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
     <NMakeOutput>HTTP</NMakeOutput>
     <NMakePreprocessorDefinitions>__thumb;LOGSYS_FLAG</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>..\Include\;$(EVOSDK)\include;..\..\evo_lib\Include;$(EOSSDK)\include;$(EVOACT)\Include</NMakeIncludeSearchPath>
-    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Release\CStringTools.o</NMakeForcedUsingAssemblies>
+    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Debug\EVOC.a</NMakeForcedUsingAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
@@ -64,7 +64,7 @@ nmake -f ..\Projects\Evo\makefile clean</NMakeCleanCommandLine>
     <NMakeOutput>HTTP</NMakeOutput>
     <NMakePreprocessorDefinitions>__thumb</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>..\Include\;$(EVOSDK)\include;..\..\evo_lib\Include;$(EOSSDK)\include;$(EVOACT)\Include</NMakeIncludeSearchPath>
-    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Release\CStringTools.o</NMakeForcedUsingAssemblies>
+    <NMakeForcedUsingAssemblies>$(EOSSDK)\lib\svc_net.o;$(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o;..\..\evo_lib\Output\Files\Evo\Release\EVOC.a</NMakeForcedUsingAssemblies>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
