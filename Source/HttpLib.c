@@ -859,7 +859,7 @@ int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
 
 ///////////////////////////////////////////////////////////////////////////////
 bool _HttpIsConnected(const HttpContext* ctx) {
-    return ctx->Flags & CONNECTION_ESTABLISHED != 0;
+    return (ctx->Flags & CONNECTION_ESTABLISHED ? true : false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
