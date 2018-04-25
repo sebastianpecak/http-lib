@@ -9,6 +9,7 @@
 #define HTTP_HEADER_TERMINATOR          "\r\n\r\n"
 #define HTTP_PROPERTY_DELIMITER         "\r\n"
 #define IMPLESS(x) x
+#define DEFAULT_SEND_TIMEOUT_S          20
 
 ///////////////////////////////////////////////////////////////////////////////
 static int32_t _GetRemoteAddress(const char* address, in_addr_t* output) {
@@ -124,19 +125,27 @@ static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize,
 ///////////////////////////////////////////////////////////////////////////////
 static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSize, size_t* dataWritten, Timeout_ms to) {
     int32_t result = HTTP_ERROR;
-    unsigned long startTime = 0;
+    Timeout_ms startTime = 0;
     fd_set writeSet = { 0 };
     struct timeval selectTo = { 0 };
     *dataWritten = 0;
 
-    to = 10000;
-    LOG_PRINTF(("_SocketWrite() -> to:%d", to));
+    LOG_PRINTF(("_SocketWrite() ->"));
 
+    // Use default timeout if not set.
+    if (to == 0) {
+        LOG_PRINTF(("\tUsing default send timeout: %us", DEFAULT_SEND_TIMEOUT_S));
+        to = DEFAULT_SEND_TIMEOUT_S * 1000;
+    }
+    // Set select timeout.
+    selectTo.tv_usec = to * 1000;
+    LOG_PRINTF(("\tselectTo.tv_usec: %u", selectTo.tv_usec));
+
+    // Start timeout timer.
     startTime = read_ticks();
-    // Do until all bytes are sent.
     do {
         result = send(stream, (uint8_t*)data + *dataWritten, dataSize - *dataWritten, 0);
-        LOG_PRINTF(("\tsend(): %d", result));
+        LOG_PRINTF(("\tsend() returned: %d", result));
         if (result >= 0) {
             // Update number of bytes sent.
             *dataWritten += result;
@@ -146,8 +155,6 @@ static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSi
             // If there is no space in internal socket buffer.
             if (errno == EWOULDBLOCK) {
                 FD_SET(stream, &writeSet);
-                selectTo.tv_usec = to * 1000;
-                LOG_PRINTF(("\tselectTo.tv_usec: %d", selectTo.tv_usec));
                 result = select(stream + 1, NULL, &writeSet, NULL, &selectTo);
                 LOG_PRINTF(("select(): %d", result));
                 // On success we can try to send more data.
@@ -390,9 +397,16 @@ int32_t _HttpSetRequestBodyRaw(const void* bodyRaw, size_t bodySize, char* reque
 
 ///////////////////////////////////////////////////////////////////////////////
 int32_t _HttpConnect(const char* url, uint16_t port, bool ssl, HttpContext* httpContext) {
+    int result = -1;
+
     LOG_PRINTF(("_HttpConnect() ->"));
 
-    return DataStreamIface->Open(&httpContext->Socket, url, port, httpContext->ConnectTimeout);
+    result = DataStreamIface->Open(&httpContext->Socket, url, port, httpContext->ConnectTimeout);
+    // If we connected successfully, set connection flag.
+    if (result == 0)
+        httpContext->Flags |= CONNECTION_ESTABLISHED;
+
+    return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -420,6 +434,36 @@ int32_t _HttpDisconnect(HttpContext* ctx, bool useForce) {
     return DataStreamIface->Close(&ctx->Socket, ctx->Timeout);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+//static void DumpBytes(const void* data, size_t dataSize) {
+//    char buffer[128];
+//    char byte[16];
+//    size_t printed = 0, bytesToPrint = 0, i;
+//
+//    while (1) {
+//        bytesToPrint = (dataSize - printed) > 16 ? 16 : (dataSize - printed);
+//        buffer[0] = 0;
+//        for (i = 0; i < bytesToPrint; ++i) {
+//            sprintf(byte, "%.02X ", *((unsigned char*)data + i + printed));
+//            strcat(buffer, byte);
+//        }
+//
+//        for (i = 0; i < bytesToPrint; ++i) {
+//            if (*((unsigned char*)data + i + printed) > 0x1f && *((unsigned char*)data + i + printed) < 0x7f) {
+//                sprintf(byte, "%c", *((unsigned char*)data + i + printed));
+//            }
+//            else
+//                strcpy(byte, ".");
+//            strcat(buffer, byte);
+//        }
+//
+//        LOG_PRINTF((buffer));
+//        printed += bytesToPrint;
+//
+//        if (bytesToPrint < 16) break;
+//    }
+//}
+
 ///////////////////////////////////////////////////////////////////////////////
 int32_t _HttpSend(const void* request, size_t requestSize, HttpContext* ctx) {
     int32_t result = HTTP_ERROR;
@@ -433,6 +477,7 @@ int32_t _HttpSend(const void* request, size_t requestSize, HttpContext* ctx) {
     // We have to reset connection context to get rid of trash data.
     _ResetConnectionContext(ctx);
     // Write data to http stream.
+    ///DumpBytes(request, requestSize);
     result = DataStreamIface->Write(ctx->Socket, request, requestSize, &dataSize, ctx->Timeout);
 
     return result;
@@ -457,35 +502,6 @@ static size_t _StringHexToInt(char* hexString, size_t hexStringLength) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// This function converts hex string to integer value.
-// As parameters it takes: string pointer and its length (path of big buffer).
-// Returns converted value.
-/*static int32_t _HexToInt(const char* hexString, size_t hexStringLength) {
-    int32_t result = HTTP_ERROR;
-    // Null-terminated copy of hexString (use C99 VLA).
-    //char* hexZeroString = NULL;
-    char hexZeroString[hexStringLength + 1] = { 0 };
-    // Result buffer.
-    //int result = 0;
-
-    // Allocate buffer for copy of hexString (null-terminated).
-    //hexZeroString = MemAlloc(hexStringLength + 1);
-    // Check for errors.
-    //if (hexZeroString == NULL)
-        // Return error.
-       //return -1;
-    // Set string terminator.
-    //hexZeroString[hexStringLength] = '\0';
-    // Copy string.
-    strncpy(hexZeroString, hexString, hexStringLength);
-    // Convert value.
-    result = strtol(hexZeroString, NULL, 16);
-    // Free buffer.
-    MemFree(hexZeroString);
-    return result;
-}*/
-
-///////////////////////////////////////////////////////////////////////////////
 // This function extracts properties values from response's header.
 // If any additional property's value is needed, code should be added here.
 static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
@@ -504,23 +520,6 @@ static void _ExtractResponseProperties(const char* buffer, HttpContext* ctx) {
     if (strstr(propertyValue, "chunked") != NULL)
         ctx->Flags |= TRANSFER_CHUNKED | ENDING_CHUNK_REQUIRED;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// This function finds last occurence of given value.
-/*static const char* _FindLast(const char* source, const char* value) {
-    const char* last = NULL;
-    const char* current = NULL;
-
-    for (;;) {
-        current = strstr(source, value);
-        if (current == NULL)
-            return last;
-        else {
-            source = current + 2;
-            last = current;
-        }
-    }
-}*/
 
 ///////////////////////////////////////////////////////////////////////////////
 static void _HandleEndOfHttpHeader(const char* headerEnd, HttpContext* ctx) {
@@ -554,7 +553,6 @@ static void _HandleLastCompleteProperty(const char* lastFullProperty, HttpContex
 // Returns: non-zero value on error.
 static int32_t _ReadHttpHeader(HttpContext* ctx) {
     int32_t result = HTTP_ERROR;
-    //unsigned short dataReceived = 0;
     size_t dataReceived = 0;
     const char* headerEnd = NULL;
     const char* lastCompleteProperty = NULL;
@@ -563,14 +561,6 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
 
     do {
         // Receive data from server.
-        /*result = VCS_RecieveRawData(
-            ctx->VCSSessionHandle,
-            (unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
-            // Receive bufferSize - 1 to provide slot for \0.
-            (ctx->DataBufferSize - ctx->DataInBuffer - 1),
-            &dataReceived,
-            ctx->RecvTimeout
-        );*/
         result = DataStreamIface->Read(
             ctx->Socket,
             (ctx->DataBuffer + ctx->DataInBuffer),
@@ -603,7 +593,6 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
             else {
                 // Try to locate last complete property in this part.
                 // Next property (which is not complete) will be moved to buffer's beginning.
-                //lastCompleteProperty = _FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
                 lastCompleteProperty = CStr_FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
                 // If we found last complete property, we shift remaining data to the buffer's beginning.
                 if (lastCompleteProperty) {
@@ -650,13 +639,6 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
         // If we have no data in DataBuffer we have to fill it up.
         // [Value]\r\n.
         if (ctx->DataInBuffer < 3) {
-            /*result = VCS_RecieveRawData(
-                ctx->VCSSessionHandle,
-                (unsigned char*)(ctx->DataBuffer + ctx->DataInBuffer),
-                (ctx->DataBufferSize - ctx->DataInBuffer),
-                dataReceived,
-                ctx->RecvTimeout
-            );*/
             result = DataStreamIface->Read(
                 ctx->Socket,
                 (ctx->DataBuffer + ctx->DataInBuffer),
@@ -687,7 +669,6 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
             return HTTP_ERROR;
         }
         // Save new chunk size.
-        //ctx->ChunkSize = _HexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
         ctx->ChunkSize = _StringHexToInt(ctx->DataBuffer, (chunkTerminator - ctx->DataBuffer));
         // Throw out chunk size from DataBuffer.
         ctx->DataInBuffer = (ctx->DataInBuffer - (chunkTerminator - ctx->DataBuffer) - 2);
@@ -741,14 +722,6 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
         ctx->DataInBuffer = 0;
     }
 
-    // Use VCS_Recv to receive all left toRecv bytes.
-    /*result = VCS_RecieveRawData(
-        ctx->VCSSessionHandle,
-        (unsigned char*)(buffer + dataRecvTotal),
-        toRecv,
-        dataReceived,
-        ctx->RecvTimeout
-    );*/
     result = DataStreamIface->Read(
         ctx->Socket,
         (buffer + dataRecvTotal),
@@ -780,7 +753,6 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
 // This function receives http data in plain encoding.
 // Returns: non-zero value on error.
 static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContext* ctx, size_t* dataRecieved) {
-    //int result = 0;
     int32_t result = HTTP_SUCCESS;
     size_t dataToBeCopied = 0;
 
@@ -798,13 +770,6 @@ static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContex
         *dataRecieved = dataToBeCopied;
         // If dataToBeCopied is less than buffer size, we get additional data from VCS.
         if (dataToBeCopied < bufferSize) {
-            /*result = VCS_RecieveRawData(
-                ctx->VCSSessionHandle,
-                (unsigned char*)(buffer + dataToBeCopied),
-                (bufferSize - dataToBeCopied),
-                dataRecieved,
-                ctx->RecvTimeout
-            );*/
             result = DataStreamIface->Read(
                 ctx->Socket,
                 (buffer + dataToBeCopied),
@@ -835,10 +800,8 @@ static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContex
 ///////////////////////////////////////////////////////////////////////////////
 // Here we specify how much data we can recieve.
 int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
-    //int result = 0;
     int32_t result = HTTP_ERROR;
     // How much data has been received.
-    //unsigned short dataReceived = 0;
     size_t dataReceived = 0;
 
     LOG_PRINTF(("_HttpRecv() ->"));
@@ -895,11 +858,9 @@ int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-IMPLESS(
 bool _HttpIsConnected(const HttpContext* ctx) {
-    return true;
+    return ctx->Flags & CONNECTION_ESTABLISHED != 0;
 }
-)
 
 ///////////////////////////////////////////////////////////////////////////////
 int32_t _HttpSetMemoryInterface(Allocator_t alloc, Deallocator_t free) {

@@ -1,4 +1,4 @@
-CONF = RELEASE
+CONF = DEBUG
 SOURCES = ..\Source\HttpLib.c 
 CSRC = ..\Source\HttpLib.c 
 CPPSRC = 
@@ -7,4 +7,4 @@ OUTPUTFILE = HTTP
 OUTPUTDIR = 
 LIBS = $(EOSSDK)\lib\svc_net.o $(EVOACT)\OutPut\RV\Files\Shlib1\Release\act.o ..\..\evo_lib\Output\Files\Evo\Release\CStringTools.o 
 INCLUDES =  -I ..\Include\ -I $(EVOSDK)\include -I ..\..\evo_lib\Include -I $(EOSSDK)\include -I $(EVOACT)\Include
-DEFINES =  -D __thumb
+DEFINES =  -D __thumb -D LOGSYS_FLAG

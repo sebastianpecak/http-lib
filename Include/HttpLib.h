@@ -39,7 +39,8 @@ typedef enum HttpFlags {
     // Or if we have to first find chunk size.
     READING_CHUNK = 2,
     HEADER_RECEIVED = 4,
-    ENDING_CHUNK_REQUIRED = 8
+    ENDING_CHUNK_REQUIRED = 8,
+    CONNECTION_ESTABLISHED = 16
 } HttpFlags;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -201,9 +202,8 @@ extern "C" {
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function checks underlying socket status and returns:
-	// 0 : Not connected.
-	// Anything other: Connected.
-	bool _HttpIsConnected(const HttpContext*);
+    // Returns: true - connected, false - not connected.
+    bool _HttpIsConnected(const HttpContext*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function is used to set library memory managment functions.
