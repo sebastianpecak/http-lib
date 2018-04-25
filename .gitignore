@@ -14,5 +14,8 @@
 *.tmp
 *.log
 .vs/*.*
+.vs/*
 *.user
 *.suo
+*.ipch
+parsed_proj.txt
