@@ -85,7 +85,7 @@ static int32_t _SocketOpen(HttpStream_t* stream, const char* url, uint16_t port,
     }
     // On socket creation error.
     else {
-        LOG_PRINTF(("\tCould not create new socket"))
+        LOG_PRINTF(("\tCould not create new socket, socket: %d, errno: %d", *stream, errno));
     }
 
     return result;
@@ -99,6 +99,9 @@ static int32_t _SocketClose(HttpStream_t* stream, Timeout_ms to) {
     if (result == 0)
         // Set invalid socket handle.
         *stream = HTTP_INVALID_SOCKET;
+    else
+        // Show debug info.
+        LOG_PRINTF(("Could not close socket, result: %d, errno: %d", result, errno));
 
     return result;
 }
