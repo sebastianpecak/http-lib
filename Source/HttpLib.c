@@ -2,6 +2,7 @@
 #include <logsys.h>
 #include <stdio.h>
 #include <CStringTools.h>
+#include <time.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // This value is used for buffering response header data.
@@ -106,7 +107,7 @@ static int32_t _SocketClose(HttpStream_t* stream, Timeout_ms to) {
     return result;
 }
 
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize, size_t* dataRead, Timeout_ms to) {
     int32_t result = HTTP_ERROR;
     int recvRes = 0;
@@ -223,6 +224,7 @@ static int32_t _ReceiveChunkedTransfer(char*, size_t, HttpContext*, size_t*);
 ///////////////////////////////////////////////////////////////////////////////
 int32_t _HttpInitRequest(HttpMethod method, const char* site, HttpVersion version, char* request, size_t requestSize) {
     int32_t result = HTTP_ERROR;
+    char ticksText[16] = { 0 };
 
     // Check request buffer validity.
     if (request && requestSize > 0) {
@@ -234,6 +236,13 @@ int32_t _HttpInitRequest(HttpMethod method, const char* site, HttpVersion versio
             site,
             VersionsText[version]
         );
+
+        // Read now.
+        unsigned long currentTicks = read_ticks();
+        sprintf(ticksText, "%u", currentTicks);
+        // Add timestamp to http header.
+        _HttpSetProperty("x-term-timestamp", ticksText, request, requestSize);
+
         // Set success.
         result = HTTP_SUCCESS;
     }
