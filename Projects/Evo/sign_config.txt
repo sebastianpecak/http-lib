@@ -1,0 +1,7 @@
+RemoteDir = \\192.168.65.17\dpajak\sign
+DirOnRemote = D:\shared\dpajak\sign
+FileSignatureTool = "C:\Program Files\Verifone\fst\filesignature.exe"
+RemoteHost = \\onir
+RemoteUser = mp
+RemotePwd = mp
+SignTool = signfile_evo.cmd

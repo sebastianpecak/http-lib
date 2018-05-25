@@ -1,14 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evo_http_lib", "evo_http_lib\evo_http_lib.vcxproj", "{5D444CEA-AA9D-4232-8CD5-18E2B099837A}"
 	ProjectSection(ProjectDependencies) = postProject
-		{675E44FF-196A-4886-972B-9B7690B39311} = {675E44FF-196A-4886-972B-9B7690B39311}
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD} = {725BCBF3-D45F-4834-9F4F-843017CF6ECD}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evo_vcs_lib", "..\evo_vcs_lib\evo_vcs_lib\evo_vcs_lib\evo_vcs_lib.vcxproj", "{675E44FF-196A-4886-972B-9B7690B39311}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evo_lib", "..\evo_lib\evo_lib\evo_lib.vcxproj", "{725BCBF3-D45F-4834-9F4F-843017CF6ECD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,16 +24,19 @@ Global
 		{5D444CEA-AA9D-4232-8CD5-18E2B099837A}.Release|Win32.ActiveCfg = Release|Win32
 		{5D444CEA-AA9D-4232-8CD5-18E2B099837A}.Release|Win32.Build.0 = Release|Win32
 		{5D444CEA-AA9D-4232-8CD5-18E2B099837A}.Release|x64.ActiveCfg = Release|Win32
-		{675E44FF-196A-4886-972B-9B7690B39311}.Debug|Win32.ActiveCfg = Debug|Win32
-		{675E44FF-196A-4886-972B-9B7690B39311}.Debug|Win32.Build.0 = Debug|Win32
-		{675E44FF-196A-4886-972B-9B7690B39311}.Debug|x64.ActiveCfg = Debug|x64
-		{675E44FF-196A-4886-972B-9B7690B39311}.Debug|x64.Build.0 = Debug|x64
-		{675E44FF-196A-4886-972B-9B7690B39311}.Release|Win32.ActiveCfg = Release|Win32
-		{675E44FF-196A-4886-972B-9B7690B39311}.Release|Win32.Build.0 = Release|Win32
-		{675E44FF-196A-4886-972B-9B7690B39311}.Release|x64.ActiveCfg = Release|x64
-		{675E44FF-196A-4886-972B-9B7690B39311}.Release|x64.Build.0 = Release|x64
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|Win32.Build.0 = Debug|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|x64.ActiveCfg = Debug|x64
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Debug|x64.Build.0 = Debug|x64
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|Win32.ActiveCfg = Release|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|Win32.Build.0 = Release|Win32
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|x64.ActiveCfg = Release|x64
+		{725BCBF3-D45F-4834-9F4F-843017CF6ECD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {720FC73F-EA03-4661-9D98-2C43F20BC5EB}
 	EndGlobalSection
 EndGlobal

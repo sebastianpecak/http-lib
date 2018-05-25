@@ -1,79 +1,77 @@
 #ifndef HTTPLIB_H
 #define HTTPLIB_H
 
-// For size_t.
-#include <string.h>
+#include <HttpStreamIface.h>
+#include <stdbool.h>
+#include <SVC_NET.H>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Library defines.
-// This value is used for buffering response header data.
-#define HTTP_BUFFER_SIZE				256
-#define HTTP_HEADER_TERMINATOR			"\r\n\r\n"
-#define HTTP_PROPERTY_DELIMITER         "\r\n"
+// HttpLib API return values.
+#define HTTP_ERROR              (-1)
+#define HTTP_SUCCESS            (0)
+#define HTTP_INVALID_SOCKET     SOCKET_ERROR
+
+///////////////////////////////////////////////////////////////////////////////
+// Library memory allocator and deallocator type.
+typedef void*(*Allocator_t)(size_t);
+typedef void(*Deallocator_t)(void*);
+
+///////////////////////////////////////////////////////////////////////////////
+// Enumeration of HTTP versions.
+typedef enum HttpVersion {
+    HTTP_10 = 0,
+    HTTP_11
+} HttpVersion;
+
+///////////////////////////////////////////////////////////////////////////////
+// Enumeration of HTTP methods.
+typedef enum HttpMethod {
+    GET = 0,
+    HEAD,
+    POST,
+    PUT
+} HttpMethod;
+
+///////////////////////////////////////////////////////////////////////////////
+typedef enum HttpFlags {
+    TRANSFER_CHUNKED = 1,
+    // This flag says if we are reading chunk and we know its size.
+    // Or if we have to first find chunk size.
+    READING_CHUNK = 2,
+    HEADER_RECEIVED = 4,
+    ENDING_CHUNK_REQUIRED = 8,
+    CONNECTION_ESTABLISHED = 16
+} HttpFlags;
+
+///////////////////////////////////////////////////////////////////////////////
+struct _HttpContext_t {
+    // Stream handle used for communication.
+    HttpStream_t Socket;
+    // Global timeout.
+    Timeout_ms Timeout;
+    // Receive timeout.
+    Timeout_ms RecvTimeout;
+    // Socket connect timeout.
+    Timeout_ms ConnectTimeout;
+    // Flags.
+    uint32_t Flags;
+    // Response content length.
+    uint32_t ContentLength;
+    // Buffer for data.
+    char* DataBuffer;
+    size_t DataBufferSize;
+    // Size of data currently stored in buffer.
+    size_t DataInBuffer;
+    // Current chunk size.
+    size_t ChunkSize;
+    // Bytes of chunk already read.
+    size_t ChunkRead;
+};
+typedef struct _HttpContext_t HttpContext;
 
 #ifdef __cplusplus
 extern "C" {
 #endif	// __cplusplus
-
-	/*
-		HttpLib delivers tools for HTTP communication.
-	*/
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Library memory allocator and deallocator type.
-	typedef void*(*Allocator_t)(size_t);
-	typedef void(*Deallocator_t)(void*);
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Enumeration of HTTP versions.
-	typedef enum HttpVersion {
-		HTTP_10,
-		HTTP_11
-	} HttpVersion;
-
-	///////////////////////////////////////////////////////////////////////////////
-	// Enumeration of HTTP methods.
-	typedef enum HttpMethod {
-		GET,
-		HEAD,
-		POST,
-		PUT
-	} HttpMethod;
-
-	///////////////////////////////////////////////////////////////////////////////
-	typedef enum HttpFlags {
-		TRANSFER_CHUNKED = 1,
-		// This flag says if we are reading chunk and we know its size.
-		// Or if we have to first find chunk size.
-		READING_CHUNK = 2,
-		HEADER_RECEIVED = 4,
-		ENDING_CHUNK_REQUIRED = 8
-	} HttpFlags;
-
-	///////////////////////////////////////////////////////////////////////////////
-	typedef struct HttpContext {
-		// Session handle used for VCS communication.
-		unsigned short VCSSessionHandle;
-		// Global timeout setting (in miliseconds).
-		unsigned short Timeout;
-		// Receive timeout (in seconds).
-		unsigned short RecvTimeout;
-		// Flags.
-		unsigned int Flags;
-		// Response content length.
-		unsigned int ContentLength;
-		// Buffer for data.
-		char* DataBuffer;
-		unsigned int DataBufferSize;
-		// Size of data currently stored in buffer.
-		unsigned int DataInBuffer;
-		// Current chunk size.
-		unsigned int ChunkSize;
-		// Bytes of chunk already read.
-		unsigned int ChunkRead;
-		// Socket connect timeout (in miliseconds).
-		unsigned short ConnectTimeout;
-	} HttpContext;
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This method intializes request's header.
@@ -84,7 +82,13 @@ extern "C" {
 	// 4) Request buffer.
 	// 5) Request buffer size.
 	// Returns: Non-zero value on error.
-	extern int _HttpInitRequest(HttpMethod, const char*, HttpVersion, char*, int);
+	int32_t _HttpInitRequest(
+        HttpMethod      method,
+        const char*     site,
+        HttpVersion     version,
+        char*           buffer,
+        size_t          bufferSize
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function checks if request header is correctly terminated.
@@ -94,7 +98,10 @@ extern "C" {
 	// 1) Request buffer.
 	// 2) Request buffer size.
 	// Returns: request length.
-	extern int _HttpCompleteRequest(char*, int);
+	int32_t _HttpCompleteRequest(
+        char*   buffer,
+        size_t  bufferSize
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This method adds property to HTTP request.
@@ -105,12 +112,22 @@ extern "C" {
 	// 3) Request buffer.
 	// 4) Request buffer size.
 	// Returns: Non-zero value on error.
-	extern int _HttpSetProperty(const char*, const char*, char*, int);
+	int32_t _HttpSetProperty(
+        const char*     key,
+        const char*     value,
+        char*           buffer,
+        size_t          bufferSize
+    );
 	// This function gets property value from request/response.
 	// Returns non-zero value on error.
 	// -1 : Property is not terminated correctly.
 	// -2 : Property not found.
-	extern int _HttpGetProperty(const char*, char*, int, const char*);
+	int32_t _HttpGetProperty(
+        const char*     key,
+        char*           buffer,
+        size_t          bufferSize,
+        const char*     request
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function completes request header and sets its body.
@@ -121,10 +138,19 @@ extern "C" {
 	// Returns: 
 	// >= 0 : Request size.
 	// < 0 : On error.
-	extern int _HttpSetRequestBody(const char*, char*, int);
+	int32_t _HttpSetRequestBody(
+        const char*     body,
+        char*           buffer,
+        size_t          bufferSize
+    );
 	// This function sets body to raw data (can cantain zeroes).
 	// Returns request size (in bytes). Important when sending binary data.
-	extern int _HttpSetRequestBodyRaw(const void*, int, char*, int);
+	int32_t _HttpSetRequestBodyRaw(
+        const void*     body,
+        size_t          bodySize,
+        char*           buffer,
+        size_t          bufferSize
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function establishes connection with remote host, using given: url, port and SSL setting.
@@ -135,7 +161,12 @@ extern "C" {
 	// 3) SSL usage flag (0 - do not use, other - use ssl).
 	// 4) Valid pointer to HttpContext.
 	// Returns: Non-zero value on error.
-	extern int _HttpConnect(const char*, unsigned short, unsigned char, HttpContext*);
+	int32_t _HttpConnect(
+        const char*     url,
+        uint16_t        port,
+        bool            ssl,
+        HttpContext*    ctx
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function disconnects from remote host.
@@ -144,7 +175,10 @@ extern "C" {
 	// Valid pointer to HttpContext object.
 	// Force disconnect flag.
 	// Returns: Non-zero value on error.
-	extern int _HttpDisconnect(HttpContext*, unsigned char);
+	int32_t _HttpDisconnect(
+        HttpContext*    ctx,
+        bool            force
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function sends HTTP request over established connection.
@@ -153,16 +187,23 @@ extern "C" {
 	// 1) Request (null-terminated string).
 	// 2) Valid HttpContext pointer.
 	// Returns: Non-zero value on error.
-	extern int _HttpSend(const void*, int, HttpContext*);
+	int32_t _HttpSend(
+        const void*     data,
+        size_t          dataSize,
+        HttpContext*    ctx
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
-	extern int _HttpRecv(char*, int, HttpContext*);
+	int32_t _HttpRecv(
+        void*           buffer,
+        size_t          bufferSize,
+        HttpContext*    ctx
+    );
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function checks underlying socket status and returns:
-	// 0 : Not connected.
-	// Anything other: Connected.
-	extern int _HttpIsConnected(const HttpContext*);
+    // Returns: true - connected, false - not connected.
+    bool _HttpIsConnected(const HttpContext*);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// This function is used to set library memory managment functions.
@@ -171,7 +212,10 @@ extern "C" {
 	// Allocator_t - valid pointer to function allocating memory.
 	// Deallocator_t - valid pointer to function freeing allocated memory.
 	// Returns: Non-zero value on error.
-	extern int _HttpSetMemoryInterface(Allocator_t, Deallocator_t);
+	int32_t _HttpSetMemoryInterface(Allocator_t, Deallocator_t);
+
+    ///////////////////////////////////////////////////////////////////////////////
+    int32_t _HttpSetStream(const HttpStreamIface_t*);
 
 #ifdef __cplusplus
 }
@@ -225,12 +269,7 @@ extern "C" {
 #undef HttpDisconnect
 #endif
 #define HttpDisconnect(httpCtx) _HttpDisconnect(httpCtx, 0)
-
-///////////////////////////////////////////////////////////////////////////////
-#ifdef HttpDisconnectForce
-#undef HttpDisconnectForce
-#endif
-#define HttpDisconnectForce(httpCtx) _HttpDisconnect(httpCtx, 1)
+#define HttpDisconnectForce(httpCtx) _HttpDisconnect(httpCtx, 0)
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef HttpSetRequestBodyRaw

@@ -17,3 +17,5 @@
 *.user
 *.suo
 *.ipch
+parsed_proj.txt
+*.cache
