@@ -19,3 +19,4 @@
 *.ipch
 parsed_proj.txt
 *.cache
+.vs/*
