@@ -5,7 +5,7 @@
 #include <time.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-// This value is used for buffering response header data.
+// This value is used for buffering response header Data.
 #define HTTP_BUFFER_SIZE                256
 #define HTTP_HEADER_TERMINATOR          "\r\n\r\n"
 #define HTTP_PROPERTY_DELIMITER         "\r\n"
@@ -117,7 +117,7 @@ static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize,
 
     recvRes = recv(stream, buffer, bufferSize, 0);
     LOG_PRINTF(("\trecvRes: %d, errno: %d", recvRes, errno));
-    // Check if we received some data.
+    // Check if we received some Data.
     if (recvRes > 0) {
         *dataRead = (size_t)recvRes;
         result = HTTP_SUCCESS;
@@ -127,7 +127,7 @@ static int32_t _SocketRead(HttpStream_t stream, void* buffer, size_t bufferSize,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSize, size_t* dataWritten, Timeout_ms to) {
+static int32_t _SocketWrite(HttpStream_t stream, const void* Data, size_t DataSize, size_t* dataWritten, Timeout_ms to) {
     int32_t result = HTTP_ERROR;
     Timeout_ms startTime = 0;
     fd_set writeSet = { 0 };
@@ -148,7 +148,7 @@ static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSi
     // Start timeout timer.
     startTime = read_ticks();
     do {
-        result = send(stream, (uint8_t*)data + *dataWritten, dataSize - *dataWritten, 0);
+        result = send(stream, (uint8_t*)Data + *dataWritten, DataSize - *dataWritten, 0);
         LOG_PRINTF(("\tsend() returned: %d", result));
         if (result >= 0) {
             // Update number of bytes sent.
@@ -161,7 +161,7 @@ static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSi
                 FD_SET(stream, &writeSet);
                 result = select(stream + 1, NULL, &writeSet, NULL, &selectTo);
                 LOG_PRINTF(("select(): %d", result));
-                // On success we can try to send more data.
+                // On success we can try to send more Data.
                 if (result > 0)
                     continue;
                 // Permanent error.
@@ -172,14 +172,14 @@ static int32_t _SocketWrite(HttpStream_t stream, const void* data, size_t dataSi
             }
             // Other unhandled error.
             else {
-                LOG_PRINTF(("\tError occured during data transmission, errno: %d, socketerrno: %d", errno, socketerrno(stream)));
+                LOG_PRINTF(("\tError occured during Data transmission, errno: %d, socketerrno: %d", errno, socketerrno(stream)));
                 break;
             }
         }
-    } while (*dataWritten < dataSize && (read_ticks() - startTime) < to);
+    } while (*dataWritten < DataSize && (read_ticks() - startTime) < to);
 
     // If we sent all bytes, then success.
-    if (*dataWritten == dataSize)
+    if (*dataWritten == DataSize)
         result = HTTP_SUCCESS;
     else
         result = HTTP_ERROR;
@@ -423,7 +423,7 @@ int32_t _HttpConnect(const char* url, uint16_t port, bool ssl, HttpContext* http
 
 ///////////////////////////////////////////////////////////////////////////////
 // This function is used internally for cleaning up connection context state.
-// By state we understand flags and other request-response specific data.
+// By state we understand flags and other request-response specific Data.
 static void _ResetConnectionContext(HttpContext* ctx) {
     ctx->ContentLength = 0;
     ctx->Flags = 0;
@@ -435,7 +435,7 @@ static void _ResetConnectionContext(HttpContext* ctx) {
 int32_t _HttpDisconnect(HttpContext* ctx, bool useForce) {
     LOG_PRINTF(("_HttpDisconnect() ->"));
 
-    // Drop data buffer.
+    // Drop Data buffer.
     if (ctx->DataBuffer && ctx->DataBufferSize > 0) {
         MemFree(ctx->DataBuffer);
         ctx->DataBuffer = NULL;
@@ -447,22 +447,22 @@ int32_t _HttpDisconnect(HttpContext* ctx, bool useForce) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-//static void DumpBytes(const void* data, size_t dataSize) {
+//static void DumpBytes(const void* Data, size_t DataSize) {
 //    char buffer[128];
 //    char byte[16];
 //    size_t printed = 0, bytesToPrint = 0, i;
 //
 //    while (1) {
-//        bytesToPrint = (dataSize - printed) > 16 ? 16 : (dataSize - printed);
+//        bytesToPrint = (DataSize - printed) > 16 ? 16 : (DataSize - printed);
 //        buffer[0] = 0;
 //        for (i = 0; i < bytesToPrint; ++i) {
-//            sprintf(byte, "%.02X ", *((unsigned char*)data + i + printed));
+//            sprintf(byte, "%.02X ", *((unsigned char*)Data + i + printed));
 //            strcat(buffer, byte);
 //        }
 //
 //        for (i = 0; i < bytesToPrint; ++i) {
-//            if (*((unsigned char*)data + i + printed) > 0x1f && *((unsigned char*)data + i + printed) < 0x7f) {
-//                sprintf(byte, "%c", *((unsigned char*)data + i + printed));
+//            if (*((unsigned char*)Data + i + printed) > 0x1f && *((unsigned char*)Data + i + printed) < 0x7f) {
+//                sprintf(byte, "%c", *((unsigned char*)Data + i + printed));
 //            }
 //            else
 //                strcpy(byte, ".");
@@ -480,23 +480,23 @@ int32_t _HttpDisconnect(HttpContext* ctx, bool useForce) {
 int32_t _HttpSend(const void* request, size_t requestSize, HttpContext* ctx) {
     int32_t result = HTTP_ERROR;
     char buffer[64] = { 0 };
-    size_t dataSize = 0;
+    size_t DataSize = 0;
 
     LOG_PRINTF(("_HttpSend() ->"));
 
     // Cleanup stream.
-    while (ctx->Flags & ENDING_CHUNK_REQUIRED && _ReceiveChunkedTransfer(buffer, sizeof(buffer), ctx, &dataSize) == 0);
-    // We have to reset connection context to get rid of trash data.
+    while (ctx->Flags & ENDING_CHUNK_REQUIRED && _ReceiveChunkedTransfer(buffer, sizeof(buffer), ctx, &DataSize) == 0);
+    // We have to reset connection context to get rid of trash Data.
     _ResetConnectionContext(ctx);
-    // Write data to http stream.
+    // Write Data to http stream.
     ///DumpBytes(request, requestSize);
-    result = DataStreamIface->Write(ctx->Socket, request, requestSize, &dataSize, ctx->Timeout);
+    result = DataStreamIface->Write(ctx->Socket, request, requestSize, &DataSize, ctx->Timeout);
 
     return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// hexString is a part of bigger data buffer.
+// hexString is a part of bigger Data buffer.
 // Returns converted value.
 static size_t _StringHexToInt(char* hexString, size_t hexStringLength) {
     size_t result = 0;
@@ -539,11 +539,11 @@ static void _HandleEndOfHttpHeader(const char* headerEnd, HttpContext* ctx) {
 
     // We set complete header flag.
     ctx->Flags |= HEADER_RECEIVED;
-    // We calculate how much data is body.
+    // We calculate how much Data is body.
     offset = (headerEnd + 4/*\r\n\r\n*/ - ctx->DataBuffer);
-    // Update how much data left in buffer.
+    // Update how much Data left in buffer.
     ctx->DataInBuffer -= offset;
-    // Now we shift data that belongs to body at buffer's beginning.
+    // Now we shift Data that belongs to body at buffer's beginning.
     memmove(ctx->DataBuffer, (headerEnd + 4), ctx->DataInBuffer);
 }
 
@@ -553,7 +553,7 @@ static void _HandleLastCompleteProperty(const char* lastFullProperty, HttpContex
 
     // Last full property offset.
     offset = lastFullProperty - ctx->DataBuffer;
-    // Update how much data left in buffer.
+    // Update how much Data left in buffer.
     ctx->DataInBuffer -= offset;
     // Shift incomplete property at the beginning.
     memmove(ctx->DataBuffer, lastFullProperty, ctx->DataInBuffer);
@@ -572,7 +572,7 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
     LOG_PRINTF(("_ReadHttpHeader() ->"));
 
     do {
-        // Receive data from server.
+        // Receive Data from server.
         result = DataStreamIface->Read(
             ctx->Socket,
             (ctx->DataBuffer + ctx->DataInBuffer),
@@ -583,9 +583,9 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
         );
 
         LOG_PRINTF(("\t@@ dataReceived: %d", dataReceived));
-        // Check if we received any data.
+        // Check if we received any Data.
         if (result == HTTP_SUCCESS && dataReceived > 0) {
-            // Update data amount in buffer.
+            // Update Data amount in buffer.
             ctx->DataInBuffer += dataReceived;
             // Set string-zero terminator.
             ctx->DataBuffer[ctx->DataInBuffer] = 0;
@@ -606,7 +606,7 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
                 // Try to locate last complete property in this part.
                 // Next property (which is not complete) will be moved to buffer's beginning.
                 lastCompleteProperty = CStr_FindLast(ctx->DataBuffer, HTTP_PROPERTY_DELIMITER);
-                // If we found last complete property, we shift remaining data to the buffer's beginning.
+                // If we found last complete property, we shift remaining Data to the buffer's beginning.
                 if (lastCompleteProperty) {
                     LOG_PRINTF(("\t@@ lastCompleteProperty: '%s'", lastCompleteProperty));
                     _HandleLastCompleteProperty(lastCompleteProperty, ctx);
@@ -622,7 +622,7 @@ static int32_t _ReadHttpHeader(HttpContext* ctx) {
         }
         // Transmission error.
         else {
-            LOG_PRINTF(("\tNo data read from TCP socket. Result: %d.", result));
+            LOG_PRINTF(("\tNo Data read from TCP socket. Result: %d.", result));
             // Header could not be read.
             return HTTP_ERROR;
         }
@@ -640,7 +640,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
     unsigned int toRecv = 0;
     // Number of bytes recieved in current call.
     unsigned int dataRecvTotal = 0;
-    // Size of data received by VCS_RecieveRawData.
+    // Size of Data received by VCS_RecieveRawData.
     *dataReceived = 0;
 
     LOG_PRINTF(("_ReceiveChunkedTransfer() ->"));
@@ -648,7 +648,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
     // Check if we are reading chunk right now.
     // If not we have to find chunk size first.
     if (!(ctx->Flags & READING_CHUNK)) {
-        // If we have no data in DataBuffer we have to fill it up.
+        // If we have no Data in DataBuffer we have to fill it up.
         // [Value]\r\n.
         if (ctx->DataInBuffer < 3) {
             result = DataStreamIface->Read(
@@ -672,7 +672,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
             memmove(ctx->DataBuffer, (ctx->DataBuffer + 2), (ctx->DataInBuffer - 2));
             ctx->DataInBuffer -= 2;
         }
-        // Here we have buffer filled up with data.
+        // Here we have buffer filled up with Data.
         // Find chunk size terminator (\r\n).
         chunkTerminator = strstr(ctx->DataBuffer, "\r\n");
         // Check if we found terminator.
@@ -701,7 +701,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
         }
     }
 
-    // Calculate how much data we should receive in this call (what left for current chunk).
+    // Calculate how much Data we should receive in this call (what left for current chunk).
     toRecv = (ctx->ChunkSize - ctx->ChunkRead);
     // If it is more than we can store in output buffer then we limit use bufferSize as limit.
     toRecv = (toRecv > bufferSize ? bufferSize : toRecv);
@@ -710,7 +710,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
     if (ctx->DataInBuffer > toRecv) {
         // We receive toRecv.
         memcpy(buffer, ctx->DataBuffer, toRecv);
-        // Shift data in buffer.
+        // Shift Data in buffer.
         memmove(ctx->DataBuffer, (ctx->DataBuffer + toRecv), (ctx->DataInBuffer - toRecv));
         // Decrease DataInBuffer size.
         ctx->DataInBuffer -= toRecv;
@@ -730,7 +730,7 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
         dataRecvTotal = ctx->DataInBuffer;
         // Increase ChunkRead.
         ctx->ChunkRead += ctx->DataInBuffer;
-        // Reset data in buffer.
+        // Reset Data in buffer.
         ctx->DataInBuffer = 0;
     }
 
@@ -762,25 +762,25 @@ static int32_t _ReceiveChunkedTransfer(char* buffer, size_t bufferSize, HttpCont
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// This function receives http data in plain encoding.
+// This function receives http Data in plain encoding.
 // Returns: non-zero value on error.
 static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContext* ctx, size_t* dataRecieved) {
     int32_t result = HTTP_SUCCESS;
     size_t dataToBeCopied = 0;
 
-    // If we have data in DataBuffer, we receive it first.
+    // If we have Data in DataBuffer, we receive it first.
     if (ctx->DataInBuffer > 0) {
-        // Calculate how much data we can recieve at once.
+        // Calculate how much Data we can recieve at once.
         dataToBeCopied = (ctx->DataInBuffer > bufferSize ? bufferSize : ctx->DataInBuffer);
         // Copy to output buffer.
         memcpy(buffer, ctx->DataBuffer, dataToBeCopied);
         // Decrease DataInBuffer value by dataToBeCopied, as it is already received.
         ctx->DataInBuffer -= dataToBeCopied;
-        // Shift data in buffer by those we received.
+        // Shift Data in buffer by those we received.
         memmove(ctx->DataBuffer, (ctx->DataBuffer + dataToBeCopied), ctx->DataInBuffer);
-        // Set how much data we already copied.
+        // Set how much Data we already copied.
         *dataRecieved = dataToBeCopied;
-        // If dataToBeCopied is less than buffer size, we get additional data from VCS.
+        // If dataToBeCopied is less than buffer size, we get additional Data from VCS.
         if (dataToBeCopied < bufferSize) {
             result = DataStreamIface->Read(
                 ctx->Socket,
@@ -794,7 +794,7 @@ static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContex
             *dataRecieved += dataToBeCopied;
         }
     }
-    // There is no data in DataBuffer, so we simply receive new data from VCS.
+    // There is no Data in DataBuffer, so we simply receive new Data from VCS.
     else
         //result = VCS_RecieveRawData(ctx->VCSSessionHandle, (unsigned char*)buffer, bufferSize, dataRecieved, ctx->RecvTimeout);
         result = DataStreamIface->Read(
@@ -810,15 +810,15 @@ static int32_t _ReceivePlainTransfer(char* buffer, size_t bufferSize, HttpContex
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Here we specify how much data we can recieve.
+// Here we specify how much Data we can recieve.
 int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
     int32_t result = HTTP_ERROR;
-    // How much data has been received.
+    // How much Data has been received.
     size_t dataReceived = 0;
 
     LOG_PRINTF(("_HttpRecv() ->"));
 
-    // Check if we have data buffer already created.
+    // Check if we have Data buffer already created.
     if (ctx->DataBuffer == NULL) {
         // Create buffer.
         ctx->DataBuffer = MemAlloc(HTTP_BUFFER_SIZE);
@@ -838,7 +838,7 @@ int32_t _HttpRecv(void* buffer, size_t bufferSize, HttpContext* ctx) {
         // Check for error.
         if (result < 0) {
             LOG_PRINTF(("\tHttp header receiving error: %d", result));
-            // For safety we return 0, as no data were received.
+            // For safety we return 0, as no Data were received.
             return 0;
         }
         LOG_PRINTF(("\tHeader received successfully. Data left: %d", ctx->DataInBuffer));

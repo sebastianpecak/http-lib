@@ -57,10 +57,10 @@ struct _HttpContext_t {
     uint32_t Flags;
     // Response content length.
     uint32_t ContentLength;
-    // Buffer for data.
+    // Buffer for Data.
     char* DataBuffer;
     size_t DataBufferSize;
-    // Size of data currently stored in buffer.
+    // Size of Data currently stored in buffer.
     size_t DataInBuffer;
     // Current chunk size.
     size_t ChunkSize;
@@ -143,8 +143,8 @@ extern "C" {
         char*           buffer,
         size_t          bufferSize
     );
-	// This function sets body to raw data (can cantain zeroes).
-	// Returns request size (in bytes). Important when sending binary data.
+	// This function sets body to raw Data (can cantain zeroes).
+	// Returns request size (in bytes). Important when sending binary Data.
 	int32_t _HttpSetRequestBodyRaw(
         const void*     body,
         size_t          bodySize,
@@ -188,8 +188,8 @@ extern "C" {
 	// 2) Valid HttpContext pointer.
 	// Returns: Non-zero value on error.
 	int32_t _HttpSend(
-        const void*     data,
-        size_t          dataSize,
+        const void*     Data,
+        size_t          DataSize,
         HttpContext*    ctx
     );
 
